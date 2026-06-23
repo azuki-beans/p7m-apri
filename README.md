@@ -1,28 +1,19 @@
 # p7m-apri
 
-Estrae il file originale (tipicamente un PDF) da file `.p7m`, cioè documenti
-firmati digitalmente in formato CMS/PKCS#7 — comuni in Italia per i documenti
-con valore legale. Web app minimale: carichi un `.p7m`, l'app estrae il
-documento, verifica la firma e te lo fa scaricare al volo.
+Estrai il documento originale (di solito un PDF) da un file `.p7m`, cioè un file
+firmato digitalmente — quelli che in Italia hanno valore legale. Carichi il
+`.p7m`, l'app tira fuori il documento e verifica la firma. Tutto nel browser, in
+pochi secondi.
 
-Nessun file viene conservato: le conversioni sono cancellate dopo un'ora.
+> Nessun file viene conservato: i documenti estratti sono cancellati automaticamente dopo un'ora.
 
-## Come funziona
+![Schermata iniziale di p7m-apri](docs/screenshot.png)
 
-Sotto il cofano è una sola chiamata a OpenSSL:
+## Avvio rapido (in locale)
 
-```bash
-openssl smime -verify -in documento.pdf.p7m -inform DER -noverify -out documento.pdf
-```
-
-`-noverify` salta la validazione della catena CA (estrae il contenuto senza
-bisogno dei certificati root), ma l'integrità della firma viene comunque
-verificata.
-
-## Eseguire l'immagine pubblica
-
-L'immagine è pubblicata su GitHub Container Registry: non serve clonare né
-buildare nulla.
+Serve solo [Docker](https://docs.docker.com/get-docker/) **oppure**
+[Podman](https://podman.io/). Non devi installare né scaricare altro: l'immagine
+è già pronta su GitHub.
 
 ```bash
 # Docker
@@ -32,44 +23,59 @@ docker run --rm -p 8000:8000 -v p7m-apri-data:/data ghcr.io/azuki-beans/p7m-apri
 podman run --rm -p 8000:8000 -v p7m-apri-data:/data ghcr.io/azuki-beans/p7m-apri:latest
 ```
 
-Poi apri <http://localhost:8000>.
+Poi apri il browser su **<http://localhost:8000>** e carica il tuo `.p7m`.
 
-## Clonare e buildare in locale
-
-```bash
-git clone https://github.com/azuki-beans/p7m-apri.git
-cd p7m-apri
-
-docker build -t p7m-apri .
-docker run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
-# con Podman: podman build -t p7m-apri . && podman run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
-```
-
-Poi apri <http://localhost:8000>.
-
-## Deploy con Docker Compose
-
-Per metterlo su un server, usando l'immagine pubblica:
+## Metterlo su un server (Docker Compose)
 
 ```bash
 git clone https://github.com/azuki-beans/p7m-apri.git
 cd p7m-apri
 
-cp .env.example .env       # poi imposta almeno DJANGO_SECRET_KEY
+cp .env.example .env       # imposta almeno DJANGO_SECRET_KEY
 docker compose up -d       # con Podman: podman compose up -d
 ```
 
-Il servizio si riavvia da solo (`restart: unless-stopped`), persiste il DB nel
-volume `p7m-apri-data` ed espone la porta `${PORT}` (default 8000). Per
-aggiornare all'ultima immagine: `docker compose pull && docker compose up -d`.
+Il servizio si riavvia da solo (`restart: unless-stopped`) e conserva il proprio
+database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
+`docker compose pull && docker compose up -d`.
 
-## Variabili d'ambiente
+### Variabili d'ambiente
 
-`DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`1`/`0`), `DJANGO_ALLOWED_HOSTS`,
-`CSRF_TRUSTED_ORIGINS`, `DJANGO_DB_PATH`.
+| Variabile | A cosa serve |
+|---|---|
+| `DJANGO_SECRET_KEY` | Chiave segreta (obbligatoria in produzione). |
+| `DJANGO_ALLOWED_HOSTS` | Domini consentiti, es. `p7m.azienda.it`. |
+| `CSRF_TRUSTED_ORIGINS` | Origini fidate con schema, es. `https://p7m.azienda.it`. |
+| `DJANGO_DEBUG` | `1`/`0` (default `0`). |
+| `DJANGO_DB_PATH` | Percorso del database SQLite. |
 
-## Note sull'output
+## Compilare l'immagine da sorgente
 
-- Il file estratto mantiene l'estensione interna: `documento.pdf.p7m` → `documento.pdf`.
-- Se il nome era `documento.p7m` senza estensione interna, l'output sarà
-  `documento` (aggiungere manualmente l'estensione).
+Se vuoi buildare tu invece di usare quella pubblica:
+
+```bash
+git clone https://github.com/azuki-beans/p7m-apri.git
+cd p7m-apri
+docker build -t p7m-apri .
+docker run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
+```
+
+## Come funziona (sotto il cofano)
+
+Dietro le quinte è una sola chiamata a OpenSSL:
+
+```bash
+openssl smime -verify -in documento.pdf.p7m -inform DER -noverify -out documento.pdf
+```
+
+- `-inform DER` — i `.p7m` sono codificati in DER.
+- `-noverify` — salta la validazione della catena di certificati CA (così non
+  servono i certificati root installati), ma l'integrità della firma viene
+  comunque verificata.
+- Il nome dell'output mantiene l'estensione interna: `documento.pdf.p7m` →
+  `documento.pdf`. Se il `.p7m` non la conteneva (`documento.p7m`), l'output sarà
+  `documento` e dovrai aggiungere l'estensione a mano.
+
+## Licenza
+
+Distribuito con licenza [MIT](LICENSE). © azuki-beans.
