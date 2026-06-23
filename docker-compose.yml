@@ -1,0 +1,24 @@
+services:
+  p7m-apri:
+    image: ghcr.io/azuki-beans/p7m-apri:latest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      # Imposta una chiave segreta robusta in produzione (vedi .env).
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?serve DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+      DJANGO_DB_PATH: /data/db.sqlite3
+    volumes:
+      - p7m-apri-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  p7m-apri-data:

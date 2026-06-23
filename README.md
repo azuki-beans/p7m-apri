@@ -47,6 +47,22 @@ docker run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
 
 Poi apri <http://localhost:8000>.
 
+## Deploy con Docker Compose
+
+Per metterlo su un server, usando l'immagine pubblica:
+
+```bash
+git clone https://github.com/azuki-beans/p7m-apri.git
+cd p7m-apri
+
+cp .env.example .env       # poi imposta almeno DJANGO_SECRET_KEY
+docker compose up -d       # con Podman: podman compose up -d
+```
+
+Il servizio si riavvia da solo (`restart: unless-stopped`), persiste il DB nel
+volume `p7m-apri-data` ed espone la porta `${PORT}` (default 8000). Per
+aggiornare all'ultima immagine: `docker compose pull && docker compose up -d`.
+
 ## Variabili d'ambiente
 
 `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` (`1`/`0`), `DJANGO_ALLOWED_HOSTS`,
