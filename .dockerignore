@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+db.sqlite3
+*.sqlite3
+.venv/
+venv/
+estratti/
+*.p7m
+README.md
+CLAUDE.md
