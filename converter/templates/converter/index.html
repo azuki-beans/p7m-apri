@@ -22,9 +22,11 @@
         h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
         p.sub { margin: 0 0 1.5rem; color: #666; font-size: .95rem; }
         input[type=file] {
-            width: 100%; padding: .75rem; border: 1px dashed #bbb;
+            width: 100%; padding: 2.5rem 1rem; border: 2px dashed #bbb;
             border-radius: 8px; background: #fafafa; margin-bottom: 1rem;
+            cursor: pointer; text-align: center; font-size: .95rem;
         }
+        input[type=file]:hover { border-color: #2563eb; background: #f0f5ff; }
         button {
             width: 100%; padding: .8rem; border: 0; border-radius: 8px;
             background: #2563eb; color: #fff; font-size: 1rem;
@@ -47,7 +49,8 @@
         <form hx-post="{% url 'verify' %}"
               hx-target="#result"
               hx-encoding="multipart/form-data"
-              hx-disabled-elt="find button">
+              hx-disabled-elt="find button"
+              hx-on::after-request="this.reset()">
             {% csrf_token %}
             <input type="file" name="file" accept=".p7m" required>
             <button type="submit">Estrai e verifica</button>

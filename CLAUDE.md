@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `p7m-apri` extracts the original file (typically a PDF) from `.p7m` files — documents signed with CMS/PKCS#7 digital signatures (common in Italy for legally-signed documents). Two things live here:
 
-1. **Reference scripts** documented in `README.md` (`extract_p7m.sh`, `extract_p7m.py`) — embedded as README code blocks, *not* checked in as files. If asked to "create the script," extract it from the corresponding README block.
+1. **Reference scripts** `extract_p7m.sh` / `extract_p7m.py` — checked-in CLI batch-extraction helpers (not referenced from the README, which is web-app/Docker focused).
 2. **A Django web app** (`config/` project + `converter/` app): a single public page where a user uploads a `.p7m` and downloads the extracted file with signature confirmation. Stack is deliberately minimal — Django + SQLite + HTMX (from CDN), gunicorn in Docker. No DRF, no static pipeline, no JS build.
 
 The README and all user-facing text/comments are in Italian; keep it that way.
