@@ -12,7 +12,7 @@ quindi lento e richiede rete; i successivi usano la cache. Tenere la cache
 aggiornata in background è il compito previsto per il futuro modulo Celery.
 """
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timedelta
 from pathlib import Path
 
@@ -31,12 +31,78 @@ class ValidationOutcome:
     signer: str       # CN del firmatario
     error: str = ""   # messaggio in caso di esito non determinabile
 
+    # Dettagli (popolati solo quando available=True)
+    signer_org: str = ""
+    signer_country: str = ""
+    signer_id: str = ""          # serialNumber, di solito il codice fiscale
+    signer_valid_from: str = ""
+    signer_valid_to: str = ""
+    md_algorithm: str = ""
+    signature_mechanism: str = ""
+    qualified: str = ""          # etichetta sulla qualificazione eIDAS
+    qtsp: str = ""               # nome del servizio fiduciario (QTSP)
+    validation_time: str = ""
+    chain: list = field(default_factory=list)  # catena: lista di dict
 
-def _cn(cert) -> str:
+
+def _part(cert, key) -> str:
     try:
-        return cert.subject.native.get("common_name", "") or ""
+        return cert.subject.native.get(key, "") or ""
     except Exception:
         return ""
+
+
+def _fmt(dt, with_time=False) -> str:
+    try:
+        return dt.strftime("%d/%m/%Y %H:%M" if with_time else "%d/%m/%Y")
+    except Exception:
+        return ""
+
+
+def _build_details(status, outcome: ValidationOutcome) -> None:
+    """Popola i campi di dettaglio di ``outcome`` a partire dallo status pyHanko.
+    Difensivo: un attributo mancante non compromette il verdetto principale."""
+    cert = status.signing_cert
+    if cert is not None:
+        outcome.signer_org = _part(cert, "organization_name")
+        outcome.signer_country = _part(cert, "country_name")
+        outcome.signer_id = _part(cert, "serial_number")
+        outcome.signer_valid_from = _fmt(cert.not_valid_before)
+        outcome.signer_valid_to = _fmt(cert.not_valid_after)
+
+    outcome.md_algorithm = getattr(status, "md_algorithm", "") or ""
+    outcome.signature_mechanism = getattr(status, "pkcs7_signature_mechanism", "") or ""
+    outcome.validation_time = _fmt(getattr(status, "validation_time", None), with_time=True)
+
+    qr = getattr(status, "qualification_result", None)
+    if qr is not None:
+        try:
+            qs = qr.status
+            if getattr(qs, "qualified", False):
+                qc_type = getattr(getattr(qs, "qc_type", None), "name", "")
+                outcome.qualified = "Qualificata" + (f" ({qc_type})" if qc_type else "")
+            else:
+                outcome.qualified = "Non qualificata"
+            sd = getattr(qr, "service_definition", None)
+            if sd is not None:
+                outcome.qtsp = getattr(sd.base_info, "service_name", "") or ""
+        except Exception:
+            pass
+
+    path = getattr(status, "validation_path", None)
+    if path is not None:
+        try:
+            for c in path.iter_certs(include_root=True):
+                outcome.chain.append({
+                    "subject": c.subject.native.get("common_name", "")
+                    or c.subject.native.get("organization_name", ""),
+                    "issuer": c.issuer.native.get("common_name", "")
+                    or c.issuer.native.get("organization_name", ""),
+                    "valid_from": _fmt(c.not_valid_before),
+                    "valid_to": _fmt(c.not_valid_after),
+                })
+        except Exception:
+            pass
 
 
 async def _get_registry(client):
@@ -91,21 +157,22 @@ async def _validate(p7m_bytes: bytes) -> ValidationOutcome:
             trust_manager=TSPTrustManager(tsp_registry=registry),
             allow_fetching=True,
             revocation_mode=settings.SIGNATURE_REVOCATION_MODE,
-            # Recupera via AIA le intermedie mancanti (es. la CA emittente
-            # ArubaPEC non inclusa nel .p7m) usando la sessione aiohttp.
+            # Recupera via AIA le intermedie mancanti usando la sessione aiohttp.
             fetcher_backend=AIOHttpFetcherBackend(client),
         )
         status = await async_validate_cms_signature(
             signed_data, validation_context=vc
         )
 
-    return ValidationOutcome(
+    outcome = ValidationOutcome(
         available=True,
         intact=bool(getattr(status, "intact", False)),
         valid=bool(getattr(status, "valid", False)),
         trusted=bool(getattr(status, "trusted", False)),
-        signer=_cn(status.signing_cert) if status.signing_cert else "",
+        signer=_part(status.signing_cert, "common_name") if status.signing_cert else "",
     )
+    _build_details(status, outcome)
+    return outcome
 
 
 def validate_signature(p7m_bytes: bytes) -> ValidationOutcome:

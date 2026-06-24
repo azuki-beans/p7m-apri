@@ -34,6 +34,57 @@
                 catena riconosciuta: {{ validation.trusted|yesno:"sì,no" }}.
             </div>
         {% endif %}
+        {% if validation.available %}
+        <details style="margin-top:.6rem;background:#fff;border:1px solid #d1d5db;
+                        border-radius:6px;padding:.5rem .7rem;color:#1f2937;">
+            <summary style="cursor:pointer;font-size:.85rem;font-weight:600;">
+                Dettagli validazione
+            </summary>
+            <dl style="margin:.6rem 0 0;font-size:.8rem;line-height:1.5;">
+                {% if validation.qualified %}
+                    <dt style="color:#6b7280;">Qualificazione</dt>
+                    <dd style="margin:0 0 .4rem;"><strong>{{ validation.qualified }}</strong></dd>
+                {% endif %}
+                {% if validation.qtsp %}
+                    <dt style="color:#6b7280;">Prestatore (QTSP)</dt>
+                    <dd style="margin:0 0 .4rem;">{{ validation.qtsp }}</dd>
+                {% endif %}
+                {% if validation.signer_org %}
+                    <dt style="color:#6b7280;">Organizzazione</dt>
+                    <dd style="margin:0 0 .4rem;">{{ validation.signer_org }}{% if validation.signer_country %} ({{ validation.signer_country }}){% endif %}</dd>
+                {% endif %}
+                {% if validation.signer_id %}
+                    <dt style="color:#6b7280;">Identificativo firmatario</dt>
+                    <dd style="margin:0 0 .4rem;">{{ validation.signer_id }}</dd>
+                {% endif %}
+                {% if validation.signer_valid_from %}
+                    <dt style="color:#6b7280;">Certificato valido</dt>
+                    <dd style="margin:0 0 .4rem;">dal {{ validation.signer_valid_from }} al {{ validation.signer_valid_to }}</dd>
+                {% endif %}
+                {% if validation.signature_mechanism %}
+                    <dt style="color:#6b7280;">Algoritmo</dt>
+                    <dd style="margin:0 0 .4rem;">{{ validation.signature_mechanism }}{% if validation.md_algorithm %} / {{ validation.md_algorithm }}{% endif %}</dd>
+                {% endif %}
+                {% if validation.validation_time %}
+                    <dt style="color:#6b7280;">Verificato il</dt>
+                    <dd style="margin:0 0 .4rem;">{{ validation.validation_time }}</dd>
+                {% endif %}
+            </dl>
+            {% if validation.chain %}
+            <div style="margin-top:.4rem;font-size:.8rem;">
+                <div style="color:#6b7280;margin-bottom:.2rem;">Catena di certificazione</div>
+                <ol style="margin:0;padding-left:1.1rem;">
+                    {% for c in validation.chain %}
+                    <li style="margin-bottom:.25rem;">
+                        <strong>{{ c.subject }}</strong>
+                        {% if c.valid_to %}<span style="color:#6b7280;"> — scad. {{ c.valid_to }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+        </details>
+        {% endif %}
     {% else %}
     <div style="margin-top:.4rem;font-size:.8rem;color:#3f6212;">
         Nota: la catena dei certificati CA non viene validata.
