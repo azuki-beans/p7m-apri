@@ -7,6 +7,12 @@ pochi secondi.
 
 > Nessun file viene conservato: i documenti estratti sono cancellati automaticamente dopo un'ora.
 
+Spuntando l'opzione **«Verifica anche la validità legale della firma (eIDAS)»**
+l'app non si limita a controllare l'integrità, ma verifica che il certificato
+del firmatario sia riconosciuto dalle EU Trusted List (i prestatori qualificati,
+inclusi quelli italiani accreditati AgID). Questa verifica è più lenta e
+richiede connessione a Internet.
+
 ![Schermata iniziale di p7m-apri](docs/screenshot.png)
 
 ## Avvio rapido (in locale)
@@ -48,6 +54,9 @@ database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
 | `CSRF_TRUSTED_ORIGINS` | Origini fidate con schema, es. `https://p7m.azienda.it`. |
 | `DJANGO_DEBUG` | `1`/`0` (default `0`). |
 | `DJANGO_DB_PATH` | Percorso del database SQLite. |
+| `TRUST_LIST_CACHE_DIR` | Cache delle EU Trusted List per la validazione eIDAS. |
+| `TRUST_LIST_TERRITORIES` | Paesi delle Trusted List, es. `IT` (default) o `IT,FR`; vuoto = tutta la UE. |
+| `SIGNATURE_REVOCATION_MODE` | Controllo revoca: `soft-fail` (default), `hard-fail`, `require`. |
 
 ## Compilare l'immagine da sorgente
 

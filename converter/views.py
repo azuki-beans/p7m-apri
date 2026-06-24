@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .extractor import extract
 from .models import Conversion
+from .validation import validate_signature
 
 # Le conversioni più vecchie di questo intervallo vengono cancellate.
 RETENTION = timedelta(hours=1)
@@ -35,7 +36,8 @@ def verify(request):
         return render(request, "converter/result.html",
                       {"error": "Il file deve avere estensione .p7m."})
 
-    result = extract(upload.read(), upload.name)
+    raw = upload.read()
+    result = extract(raw, upload.name)
     if result is None:
         return render(request, "converter/result.html", {
             "error": "Impossibile estrarre il file: non è un .p7m valido "
@@ -50,10 +52,14 @@ def verify(request):
         verified=result.verified,
         signer=result.signer,
     )
-    return render(request, "converter/result.html", {
+    context = {
         "conversion": conversion,
         "download_url": reverse("download", args=[conversion.id]),
-    })
+    }
+    # Validazione legale (eIDAS) solo se richiesta: è lenta e richiede rete.
+    if request.POST.get("validate") == "on":
+        context["validation"] = validate_signature(raw)
+    return render(request, "converter/result.html", context)
 
 
 @require_GET

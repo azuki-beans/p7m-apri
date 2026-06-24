@@ -13,8 +13,9 @@ The README and all user-facing text/comments are in Italian; keep it that way.
 
 ## Web app architecture
 
+- `converter/validation.py` — **optional** eIDAS legal validation, separate from extraction. Where OpenSSL only confirms integrity, pyHanko establishes *trust*: it validates the signer's certificate against the EU Trusted Lists (LOTL, includes Italian AgID-accredited TSPs). API used: `async_validate_detached_cms()` on the enveloping SignedData, with a `ValidationContext` whose trust comes from `TSPTrustManager(tsp_registry=...)`, built once per process via `lotl_to_registry()` (restricted to `TRUST_LIST_TERRITORIES`, a **set of uppercase ISO codes** — default `{"IT"}` — passed as `only_territories` (pyHanko wants a `Set[str]`, not a string), so the cold-cache download is fast and skips foreign lists that trip parsing) + a `FileSystemTLCache` at `TRUST_LIST_CACHE_DIR` (default `/data/trust-lists` in Docker). `validate_signature()` is a sync wrapper (`asyncio.run`) that **never raises** — on any problem (no network, pyHanko/aiohttp missing, malformed file) it returns `ValidationOutcome(available=False, error=...)`. pyHanko imports are deferred inside functions so the app boots and extraction works even without the `pyhanko[etsi,async-http]` dependency installed. The first validation is slow (downloads + verifies the EUTL); keeping that cache warm is the job of the **planned Celery module** (not yet built). Revocation strictness is `SIGNATURE_REVOCATION_MODE` (default `soft-fail`).
 - `converter/extractor.py` — the only place that shells out to OpenSSL. `extract()` runs `smime -verify` (see Core operation), reports `verified` from the presence of `"Verification successful"` in stderr, and `_signer()` parses the firmatario CN via `openssl pkcs7 -print_certs`. File type/extension is sniffed from magic bytes in `_detect()` — it only recognizes PDF/ZIP/DOC/RTF/XML; anything else falls back to `application/octet-stream` with no extension, so `_output_name()` keeps whatever was inside the `.p7m` name. `extract()` returns `None` (not an exception) on any failure — invalid file, non-zero exit, or empty output.
-- Two-step HTMX flow: `POST /verify/` extracts, stores the result row, and returns the `result.html` partial with a download link; `GET /download/<uuid>/` streams the bytes back. Extracted files are kept as a `BinaryField` BLOB in SQLite (model `Conversion`), **never written to disk**, and purged after 1h (`RETENTION`) by `_cleanup()` on each upload. The view rejects anything not ending in `.p7m` before calling `extract()`. Uploads are held entirely in memory and capped at 50 MB (`DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` in `settings.py`).
+- Two-step HTMX flow: `POST /verify/` extracts, stores the result row, and returns the `result.html` partial with a download link. The `validate` checkbox (off by default) additionally runs `validate_signature()` on the raw bytes and passes a `validation` `ValidationOutcome` to the template; `GET /download/<uuid>/` streams the bytes back. Extracted files are kept as a `BinaryField` BLOB in SQLite (model `Conversion`), **never written to disk**, and purged after 1h (`RETENTION`) by `_cleanup()` on each upload. The view rejects anything not ending in `.p7m` before calling `extract()`. Uploads are held entirely in memory and capped at 50 MB (`DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` in `settings.py`).
 - The migration `converter/migrations/0001_initial.py` is hand-maintained — if you change `models.py`, update it (or regenerate with `makemigrations`) so the Docker `migrate` step stays in sync.
 
 ## Core operation
@@ -32,8 +33,9 @@ Key details that matter when modifying any extraction logic:
 
 ## Dependencies
 
-- `openssl` (the only runtime dependency)
+- `openssl` (the only runtime dependency for *extraction*)
 - `python3` for the Python variant (stdlib only — `subprocess`, `pathlib`)
+- `pyhanko[etsi,async-http]` — only for the optional eIDAS validation (`converter/validation.py`); extraction works without it.
 
 ## Running
 

@@ -7,7 +7,8 @@ RUN apt-get update \
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DJANGO_DB_PATH=/data/db.sqlite3
+    DJANGO_DB_PATH=/data/db.sqlite3 \
+    TRUST_LIST_CACHE_DIR=/data/trust-lists
 
 WORKDIR /app
 

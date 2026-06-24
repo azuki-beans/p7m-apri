@@ -37,6 +37,8 @@
         .htmx-request .indicator { display: block; }
         .htmx-request button { opacity: .6; pointer-events: none; }
         footer { margin-top: 1.5rem; font-size: .8rem; color: #999; }
+        .opt { display: block; margin-bottom: 1rem; font-size: .85rem; color: #555; cursor: pointer; }
+        .opt span { color: #888; }
         .copyright { margin: .75rem 0 0; font-size: .72rem; color: #aaa; }
         .copyright a { color: #aaa; text-decoration: underline; }
         a { color: #2563eb; }
@@ -55,6 +57,11 @@
               hx-on::after-request="this.reset()">
             {% csrf_token %}
             <input type="file" name="file" accept=".p7m" required>
+            <label class="opt">
+                <input type="checkbox" name="validate">
+                Verifica anche la validità legale della firma (eIDAS) —
+                <span>più lenta, controlla la catena dei certificati sulle EU Trusted List</span>
+            </label>
             <button type="submit">Estrai e verifica</button>
             <div class="indicator">Elaborazione in corso…</div>
         </form>
