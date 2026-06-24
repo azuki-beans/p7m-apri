@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 96" width="340" height="96" role="img" aria-label="azuki-beans">
+  <defs>
+    <linearGradient id="logoFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C2495A"/>
+      <stop offset="1" stop-color="#8A2230"/>
+    </linearGradient>
+    <linearGradient id="logoBack" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A2230"/>
+      <stop offset="1" stop-color="#5E1620"/>
+    </linearGradient>
+  </defs>
+
+  <!-- marchio: due fagioli azuki -->
+  <g>
+    <g transform="rotate(20 60 50)">
+      <ellipse cx="60" cy="50" rx="18" ry="24" fill="url(#logoBack)"/>
+      <rect x="57" y="32" width="6" height="36" rx="3" fill="#F5EAD7" opacity="0.85"/>
+    </g>
+    <g transform="rotate(-18 40 48)">
+      <ellipse cx="40" cy="48" rx="20" ry="26" fill="url(#logoFront)"/>
+      <ellipse cx="32" cy="36" rx="6" ry="10" fill="#ffffff" opacity="0.18"/>
+      <rect x="37" y="26" width="6" height="44" rx="3" fill="#F5EAD7"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="100" y="58"
+        font-family="-apple-system, Segoe UI, Roboto, system-ui, sans-serif"
+        font-size="38" font-weight="800" letter-spacing="-1">
+    <tspan fill="#8A2230">azuki</tspan><tspan fill="#3A2326">-beans</tspan>
+  </text>
+</svg>

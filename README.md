@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="brand/azuki-beans-logo.svg" alt="azuki-beans" width="300">
+</p>
+
 # p7m-apri
 
 Estrai il documento originale (di solito un PDF) da un file `.p7m`, cioè un file

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="azuki-beans">
+  <defs>
+    <linearGradient id="bean" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C2495A"/>
+      <stop offset="1" stop-color="#7A1F2B"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#F5EAD7"/>
+  <g transform="rotate(-20 32 32)">
+    <ellipse cx="32" cy="32" rx="17" ry="23" fill="url(#bean)"/>
+    <ellipse cx="25" cy="22" rx="5" ry="8" fill="#ffffff" opacity="0.18"/>
+    <rect x="29" y="12" width="6" height="40" rx="3" fill="#F5EAD7"/>
+  </g>
+</svg>
