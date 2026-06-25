@@ -104,6 +104,34 @@ Per attivare gli analytics Umami aggiungi nello stesso modo
 `UMAMI_SRC` e `UMAMI_WEBSITE_ID`. Per aggiornare l'app in futuro basta
 rilanciare il comando `gcloud run deploy --source .`.
 
+### Chiave segreta con Secret Manager (consigliato in produzione)
+
+Passare `DJANGO_SECRET_KEY` tra le env la lascia in chiaro nella configurazione
+del servizio. Meglio custodirla in **Secret Manager** e farla leggere a Cloud
+Run a runtime.
+
+```bash
+# 1. Abilita l'API e crea il secret con un valore casuale
+gcloud services enable secretmanager.googleapis.com
+python -c "import secrets;print(secrets.token_urlsafe(50))" \
+  | gcloud secrets create django-secret-key --data-file=-
+
+# 2. Concedi al service account di Cloud Run il permesso di leggerlo
+PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format='value(projectNumber)')
+gcloud secrets add-iam-policy-binding django-secret-key \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+# 3. Collega il secret alla variabile d'ambiente (al posto di --set-env-vars DJANGO_SECRET_KEY=...)
+gcloud run services update p7m-apri --region europe-west1 \
+  --update-secrets DJANGO_SECRET_KEY=django-secret-key:latest
+```
+
+`:latest` segue automaticamente l'ultima versione: per ruotare la chiave basta
+aggiungere una nuova versione al secret (`gcloud secrets versions add
+django-secret-key --data-file=-`) e riavviare il servizio. Lo stesso meccanismo
+vale per qualsiasi altra variabile sensibile.
+
 ## Compilare l'immagine da sorgente
 
 Se vuoi buildare tu invece di usare quella pubblica:
