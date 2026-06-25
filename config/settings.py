@@ -18,6 +18,11 @@ INSTALLED_APPS = [
     "converter",
 ]
 
+# Analytics opzionale (Umami): se entrambe le variabili sono valorizzate, la
+# home page carica lo script. Vuote = nessun tracciamento.
+UMAMI_SRC = os.environ.get("UMAMI_SRC", "")
+UMAMI_WEBSITE_ID = os.environ.get("UMAMI_WEBSITE_ID", "")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -57,6 +62,14 @@ TRUST_LIST_CACHE_DIR = os.environ.get(
 # 'hard-fail' / 'require': più rigorose, richiedono CRL/OCSP raggiungibili.
 SIGNATURE_REVOCATION_MODE = os.environ.get(
     "SIGNATURE_REVOCATION_MODE", "soft-fail"
+)
+# Tolleranza temporale (in secondi) usata nei controlli di revoca OCSP/CRL.
+# pyHanko di default tollera 1s: se l'orologio del server è indietro rispetto
+# all'ora reale, una risposta OCSP appena emessa sembra "troppo recente" e la
+# validazione fallisce. Un valore generoso assorbe piccoli sfasamenti di clock.
+# La cura vera resta sincronizzare l'orologio del server (NTP).
+SIGNATURE_TIME_TOLERANCE = int(
+    os.environ.get("SIGNATURE_TIME_TOLERANCE", "60")
 )
 # Limita le EU Trusted List ai paesi indicati (codici ISO separati da virgola,
 # es. "IT,FR"). Default "IT": l'app valida firme italiane, così la prima

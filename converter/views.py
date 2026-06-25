@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -22,7 +23,10 @@ def _cleanup():
 
 @require_GET
 def index(request):
-    return render(request, "converter/index.html")
+    return render(request, "converter/index.html", {
+        "umami_src": settings.UMAMI_SRC,
+        "umami_website_id": settings.UMAMI_WEBSITE_ID,
+    })
 
 
 @require_POST

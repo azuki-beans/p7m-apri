@@ -157,6 +157,9 @@ async def _validate(p7m_bytes: bytes) -> ValidationOutcome:
             trust_manager=TSPTrustManager(tsp_registry=registry),
             allow_fetching=True,
             revocation_mode=settings.SIGNATURE_REVOCATION_MODE,
+            # Assorbe piccoli sfasamenti di clock del server: senza questo una
+            # risposta OCSP appena emessa risulta "troppo recente" (default 1s).
+            time_tolerance=timedelta(seconds=settings.SIGNATURE_TIME_TOLERANCE),
             # Recupera via AIA le intermedie mancanti usando la sessione aiohttp.
             fetcher_backend=AIOHttpFetcherBackend(client),
         )

@@ -61,6 +61,48 @@ database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
 | `TRUST_LIST_CACHE_DIR` | Cache delle EU Trusted List per la validazione eIDAS. |
 | `TRUST_LIST_TERRITORIES` | Paesi delle Trusted List, es. `IT` (default) o `IT,FR`; vuoto = tutta la UE. |
 | `SIGNATURE_REVOCATION_MODE` | Controllo revoca: `soft-fail` (default), `hard-fail`, `require`. |
+| `SIGNATURE_TIME_TOLERANCE` | Tolleranza in secondi sui tempi OCSP/CRL (default `60`); alza il valore se l'orologio del server è impreciso. |
+| `PORT` | Porta su cui ascoltare (default `8000`); Cloud Run e simili la impostano da soli. |
+| `UMAMI_SRC` | URL dello script Umami (es. `https://cloud.umami.is/script.js`); vuoto = nessun analytics. |
+| `UMAMI_WEBSITE_ID` | ID del sito su Umami; va valorizzato insieme a `UMAMI_SRC`. |
+
+## Deploy gratuito su Google Cloud Run
+
+Cloud Run esegue il container senza volumi e scala a zero quando nessuno lo usa
+(rientra nel free tier). Il filesystem è effimero: il DB SQLite e la cache delle
+Trusted List vivono solo finché l'istanza è attiva, quindi dopo un avvio a
+freddo la **prima** verifica eIDAS torna lenta (riscarica la LOTL). Per
+l'estrazione dei PDF non cambia nulla.
+
+Serve l'[SDK gcloud](https://cloud.google.com/sdk/docs/install) e un progetto GCP.
+
+```bash
+# 1. Imposta il progetto e abilita le API necessarie
+gcloud config set project IL-TUO-PROGETTO
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+# 2. Primo deploy: builda dal Dockerfile e pubblica il servizio
+gcloud run deploy p7m-apri \
+  --source . \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --memory 512Mi \
+  --set-env-vars DJANGO_SECRET_KEY=$(python -c "import secrets;print(secrets.token_urlsafe(50))")
+```
+
+Al termine `gcloud` stampa l'URL del servizio (es.
+`https://p7m-apri-xxxx.europe-west1.run.app`). Le richieste `POST` del form
+hanno bisogno che quell'origine sia fidata, quindi aggiornala subito:
+
+```bash
+# 3. Comunica a Django il proprio dominio (usa l'URL ottenuto sopra)
+gcloud run services update p7m-apri --region europe-west1 \
+  --update-env-vars DJANGO_ALLOWED_HOSTS=p7m-apri-xxxx.europe-west1.run.app,CSRF_TRUSTED_ORIGINS=https://p7m-apri-xxxx.europe-west1.run.app
+```
+
+Per attivare gli analytics Umami aggiungi nello stesso modo
+`UMAMI_SRC` e `UMAMI_WEBSITE_ID`. Per aggiornare l'app in futuro basta
+rilanciare il comando `gcloud run deploy --source .`.
 
 ## Compilare l'immagine da sorgente
 

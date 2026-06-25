@@ -21,6 +21,7 @@ COPY . .
 RUN mkdir -p /data
 VOLUME /data
 
+# In locale ascolta sulla 8000; su Cloud Run (e simili) si adatta a $PORT.
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application -b 0.0.0.0:8000 --workers 2 --timeout 120"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application -b 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"]

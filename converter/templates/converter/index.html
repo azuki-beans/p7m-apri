@@ -6,6 +6,9 @@
     <title>p7m-apri — Estrai PDF da file .p7m</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImF6dWtpLWJlYW5zIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmVhbiIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNDMjQ5NUEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN0ExRjJCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iI0Y1RUFENyIvPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzMiAzMikiPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzIiIHJ4PSIxNyIgcnk9IjIzIiBmaWxsPSJ1cmwoI2JlYW4pIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjUiIGN5PSIyMiIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjE4Ii8+CiAgICA8cmVjdCB4PSIyOSIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjQwIiByeD0iMyIgZmlsbD0iI0Y1RUFENyIvPgogIDwvZz4KPC9zdmc+Cg==">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    {% if umami_src and umami_website_id %}
+    <script defer src="{{ umami_src }}" data-website-id="{{ umami_website_id }}"></script>
+    {% endif %}
     <style>
         :root { color-scheme: light dark; }
         * { box-sizing: border-box; }
