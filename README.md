@@ -9,6 +9,11 @@ firmato digitalmente — quelli che in Italia hanno valore legale. Carichi il
 `.p7m`, l'app tira fuori il documento e verifica la firma. Tutto nel browser, in
 pochi secondi.
 
+> **Demo online:** <https://p7m-apri-42412551187.europe-west8.run.app>
+> — provala subito, senza installare nulla. È un'istanza dimostrativa: non
+> caricare documenti riservati e tieni presente che la prima verifica eIDAS può
+> essere lenta (l'istanza scala a zero quando inutilizzata).
+
 > Nessun file viene conservato: i documenti estratti sono cancellati automaticamente dopo un'ora.
 
 Spuntando l'opzione **«Verifica anche la validità legale della firma (eIDAS)»**
