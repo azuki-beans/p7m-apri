@@ -3,7 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>p7m-apri — Estrai PDF da file .p7m</title>
+    <title>Aprire file .p7m online — Estrai il PDF | p7m-apri</title>
+    <meta name="description" content="Apri i file .p7m e estrai il documento originale (di solito un PDF) direttamente dal browser, gratis e senza installare nulla. I file non vengono conservati.">
+    <link rel="canonical" href="https://p7m-apri-42412551187.europe-west8.run.app/">
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="p7m-apri">
+    <meta property="og:title" content="Aprire file .p7m online — Estrai il PDF">
+    <meta property="og:description" content="Estrai il documento originale da un file .p7m firmato digitalmente, dal browser, gratis e senza installare nulla.">
+    <meta property="og:url" content="https://p7m-apri-42412551187.europe-west8.run.app/">
+    <meta property="og:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/screenshot.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Aprire file .p7m online — Estrai il PDF">
+    <meta name="twitter:description" content="Estrai il documento originale da un file .p7m firmato digitalmente, dal browser, gratis e senza installare nulla.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/screenshot.png">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImF6dWtpLWJlYW5zIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmVhbiIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNDMjQ5NUEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN0ExRjJCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iI0Y1RUFENyIvPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzMiAzMikiPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzIiIHJ4PSIxNyIgcnk9IjIzIiBmaWxsPSJ1cmwoI2JlYW4pIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjUiIGN5PSIyMiIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjE4Ii8+CiAgICA8cmVjdCB4PSIyOSIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjQwIiByeD0iMyIgZmlsbD0iI0Y1RUFENyIvPgogIDwvZz4KPC9zdmc+Cg==">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     {% if umami_src and umami_website_id %}
@@ -14,9 +29,9 @@
         * { box-sizing: border-box; }
         body {
             font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-            margin: 0; min-height: 100vh; display: flex;
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            background: #f4f5f7; color: #1a1a1a; padding: 1rem;
+            background: #f4f5f7; color: #1a1a1a; padding: 2rem 1rem;
         }
         .card {
             background: #fff; max-width: 520px; width: 100%;
@@ -46,6 +61,13 @@
         .copyright { margin: .75rem 0 0; font-size: .72rem; color: #aaa; }
         .copyright a { color: #aaa; text-decoration: underline; }
         a { color: #2563eb; }
+        .info {
+            max-width: 640px; width: 100%; margin: 2rem auto 0;
+            color: #374151; font-size: .95rem; line-height: 1.6;
+        }
+        .info h2 { font-size: 1.25rem; margin: 2rem 0 .5rem; color: #1a1a1a; }
+        .info h3 { font-size: 1rem; margin: 1.25rem 0 .25rem; color: #1a1a1a; }
+        .info p { margin: 0 0 .75rem; }
     </style>
 </head>
 <body>
@@ -101,5 +123,93 @@
             </p>
         </footer>
     </main>
+
+    <article class="info">
+        <h2>Cos'è un file .p7m e come si apre</h2>
+        <p>Un file con estensione <code>.p7m</code> è un documento firmato
+        digitalmente con firma <strong>CAdES</strong> (standard CMS/PKCS#7),
+        molto usato in Italia perché ha valore legale: fatture, contratti,
+        certificati e atti della Pubblica Amministrazione arrivano spesso in
+        questo formato. Dentro al <code>.p7m</code> c'è il documento originale
+        (di solito un PDF) “avvolto” dalla firma del firmatario.</p>
+        <p>Per leggerlo devi <strong>estrarre il documento originale</strong>.
+        Con <strong>p7m-apri</strong> ti basta caricare il file qui sopra: in
+        pochi secondi ottieni il PDF (o il file originale) pronto da scaricare,
+        direttamente dal browser e senza installare alcun programma.</p>
+
+        <h2>Domande frequenti</h2>
+
+        <h3>Come apro un file .p7m senza installare programmi?</h3>
+        <p>Carica il <code>.p7m</code> nel riquadro in alto e premi “Estrai e
+        verifica”: l'app tira fuori il documento originale e te lo fa scaricare.
+        Funziona da qualsiasi browser, anche da smartphone, senza Dike,
+        ArubaSign o altri software da installare.</p>
+
+        <h3>I miei documenti vengono conservati o letti?</h3>
+        <p>No. I file vengono elaborati in memoria e <strong>non sono mai
+        salvati su disco</strong>; il documento estratto resta disponibile per
+        il solo download e viene cancellato automaticamente dopo un'ora.
+        Trattandosi di documenti spesso riservati, è un punto a cui teniamo.</p>
+
+        <h3>Cosa significa “verificare la validità legale (eIDAS)”?</h3>
+        <p>Oltre a controllare che il file sia integro, attivando l'opzione
+        l'app verifica che il certificato del firmatario sia riconosciuto dalle
+        <strong>EU Trusted List</strong> (i prestatori di servizi fiduciari
+        qualificati, inclusi quelli italiani accreditati AgID). Così sai non
+        solo che la firma è intatta, ma che è <em>affidabile</em>.</p>
+
+        <h3>Perché a volte il file estratto non ha estensione?</h3>
+        <p>Il nome dell'output mantiene quello interno al <code>.p7m</code>:
+        <code>documento.pdf.p7m</code> diventa <code>documento.pdf</code>. Se il
+        file di partenza era <code>documento.p7m</code> (senza estensione
+        interna), l'output sarà <code>documento</code> e dovrai aggiungere tu
+        l'estensione corretta, di solito <code>.pdf</code>.</p>
+
+        <h3>È gratis?</h3>
+        <p>Sì, p7m-apri è gratuito e <a
+        href="https://github.com/azuki-beans/p7m-apri">open source</a>: puoi
+        anche eseguirlo sul tuo server con Docker.</p>
+    </article>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Come apro un file .p7m senza installare programmi?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Carica il file .p7m su p7m-apri e premi Estrai e verifica: l'app estrae il documento originale (di solito un PDF) e te lo fa scaricare, direttamente dal browser e senza installare Dike, ArubaSign o altri software."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "I miei documenti vengono conservati?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. I file vengono elaborati in memoria e non sono mai salvati su disco; il documento estratto è disponibile solo per il download e viene cancellato automaticamente dopo un'ora."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Cos'è un file .p7m?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "È un documento firmato digitalmente con firma CAdES (standard CMS/PKCS#7), usato in Italia perché ha valore legale. Contiene il documento originale, di solito un PDF, avvolto dalla firma del firmatario."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Cosa significa verificare la validità legale (eIDAS)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Significa controllare, oltre all'integrità del file, che il certificato del firmatario sia riconosciuto dalle EU Trusted List, cioè dai prestatori di servizi fiduciari qualificati inclusi quelli italiani accreditati AgID."
+          }
+        }
+      ]
+    }
+    </script>
 </body>
 </html>
