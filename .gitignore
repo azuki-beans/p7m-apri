@@ -5,3 +5,5 @@ db.sqlite3
 .venv/
 venv/
 estratti/
+
+.DS_Store
