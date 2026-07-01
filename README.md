@@ -24,6 +24,16 @@ richiede connessione a Internet.
 
 ![Schermata iniziale di p7m-apri](docs/screenshot.png)
 
+Ecco il risultato di una verifica andata a buon fine — i dati del firmatario
+sono **fittizi**, generati con un certificato di test:
+
+![Risultato di una verifica riuscita](docs/esempio/p7m_done.png)
+
+> Vuoi provare senza usare un tuo documento? Nel repo c'è un file di esempio già
+> firmato con un'identità inventata:
+> [`docs/esempio/documento-esempio.pdf.p7m`](docs/esempio/documento-esempio.pdf.p7m).
+> Caricalo nell'app per riprodurre lo screenshot qui sopra.
+
 ## Avvio rapido (in locale)
 
 Serve solo [Docker](https://docs.docker.com/get-docker/) **oppure**
