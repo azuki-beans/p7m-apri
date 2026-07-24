@@ -32,12 +32,13 @@ def _pdf_name(original_name: str) -> str:
     return f"{base or 'fattura'}.pdf"
 
 
-def _to_invoice_xml(raw: bytes, name: str = "") -> bytes:
-    """Restituisce i byte XML della fattura.
+def _to_invoice_xml(raw: bytes, name: str = "") -> tuple[bytes, dict | None]:
+    """Restituisce `(xml, firma)`.
 
     Se l'input è un .p7m (per estensione o per firma DER, primo byte 0x30) lo
-    estrae con OpenSSL e ne usa il contenuto; altrimenti lo passa così com'è.
-    Solleva `ValueError` se il .p7m non è estraibile.
+    estrae con OpenSSL e `firma` è un dict con l'esito della verifica
+    (`verified`) e il firmatario (`signer`); altrimenti `firma` è None e l'XML
+    è passato così com'è. Solleva `ValueError` se il .p7m non è estraibile.
     """
     looks_p7m = name.lower().endswith(".p7m") or raw[:1] == b"\x30"
     if looks_p7m:
@@ -46,8 +47,9 @@ def _to_invoice_xml(raw: bytes, name: str = "") -> bytes:
             raise ValueError(
                 "File .p7m non valido o non firmato in formato CMS/PKCS#7."
             )
-        return bytes(result.content)
-    return raw
+        firma = {"verified": result.verified, "signer": result.signer}
+        return bytes(result.content), firma
+    return raw, None
 
 
 @require_GET
@@ -73,7 +75,8 @@ def render_view(request):
 
     raw = upload.read()
     try:
-        pdf = render_pdf(_to_invoice_xml(raw, upload.name))
+        xml, firma = _to_invoice_xml(raw, upload.name)
+        pdf = render_pdf(xml)
     except ValueError as exc:
         return render(request, "fatture/result.html", {"error": str(exc)})
     except Exception:
@@ -88,6 +91,7 @@ def render_view(request):
     )
     return render(request, "fatture/result.html", {
         "fattura": fattura,
+        "firma": firma,
         "view_url": reverse("fattura_pdf", args=[fattura.id]),
         "download_url": reverse("fattura_pdf", args=[fattura.id]) + "?dl=1",
     })
@@ -110,7 +114,11 @@ def from_conversion(request, pk):
     """Visualizza come fattura un file .p7m già estratto in home (Conversion)."""
     _cleanup()
     conversion = get_object_or_404(Conversion, pk=pk)
-    context = {}
+    # La Conversion nasce sempre da un .p7m: mostriamo l'esito della firma.
+    context = {"firma": {
+        "verified": conversion.verified,
+        "signer": conversion.signer,
+    }}
     try:
         pdf = render_pdf(bytes(conversion.content))
     except ValueError as exc:
@@ -153,9 +161,8 @@ def api_pdf(request):
             status=400,
         )
     try:
-        pdf = render_pdf(
-            _to_invoice_xml(raw, name), accent=request.GET.get("accent")
-        )
+        xml, _firma = _to_invoice_xml(raw, name)
+        pdf = render_pdf(xml, accent=request.GET.get("accent"))
     except ValueError as exc:
         return JsonResponse({"error": str(exc)}, status=422)
     except Exception:
