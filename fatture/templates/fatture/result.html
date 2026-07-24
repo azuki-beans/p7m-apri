@@ -1,0 +1,23 @@
+{% if error %}
+<div style="margin-top:1.5rem;padding:1rem;border-radius:8px;
+            background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;">
+    ⚠️ {{ error }}
+</div>
+{% else %}
+<div style="margin-top:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem;">
+        <span style="color:#166534;font-weight:600;">✓ Fattura impaginata</span>
+        <a href="{{ download_url }}"
+           style="padding:.55rem 1rem;background:#16a34a;color:#fff;
+                  border-radius:8px;text-decoration:none;font-weight:600;
+                  font-size:.9rem;">
+            ⬇ Scarica {{ fattura.output_name }}
+        </a>
+    </div>
+    <iframe src="{{ view_url }}"
+            title="Anteprima PDF della fattura"
+            style="width:100%;height:70vh;min-height:480px;border:1px solid #d1d5db;
+                   border-radius:8px;background:#fff;"></iframe>
+</div>
+{% endif %}

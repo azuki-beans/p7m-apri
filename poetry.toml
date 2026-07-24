@@ -1,0 +1,3 @@
+[virtualenvs]
+# Il virtualenv vive in ./.venv (già in .gitignore).
+in-project = true

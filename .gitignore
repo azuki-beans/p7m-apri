@@ -5,5 +5,9 @@ db.sqlite3
 .venv/
 venv/
 estratti/
-
+data_samples/
 .DS_Store
+
+# Segreti locali e stack di test (non committati).
+.env
+stacks/

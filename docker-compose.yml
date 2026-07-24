@@ -11,6 +11,9 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
       DJANGO_DB_PATH: /data/db.sqlite3
+      # Personalizzazione PDF fatture (facoltativa): colore HEX e logo aziendale.
+      FATTURA_ACCENT: "${FATTURA_ACCENT:-}"
+      FATTURA_LOGO_URL: "${FATTURA_LOGO_URL:-}"
     volumes:
       - p7m-apri-data:/data
     healthcheck:

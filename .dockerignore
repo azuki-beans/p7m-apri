@@ -11,3 +11,6 @@ trust-lists/
 *.p7m
 README.md
 CLAUDE.md
+.env
+stacks/
+data_samples/

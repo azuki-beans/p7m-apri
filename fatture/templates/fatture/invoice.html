@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Fattura {{ documenti.0.numero }}</title>
+<style>
+    @page {
+        size: A4;
+        margin: 14mm 14mm 18mm;
+        @bottom-center {
+            content: "Pagina " counter(page) " di " counter(pages);
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 7.5pt;
+            color: #9aa3ad;
+        }
+    }
+
+    * { box-sizing: border-box; }
+    html { -weasy-hyphens: none; }
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 9.5pt;
+        line-height: 1.4;
+        color: #23272e;
+        margin: 0;
+    }
+
+    /* Un documento = una fattura del lotto; ognuna parte su pagina nuova. */
+    .fattura { page-break-after: always; }
+    .fattura:last-child { page-break-after: auto; }
+
+    /* ---- Intestazione ---- */
+    .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2.5pt solid {{ accent }};
+        padding-bottom: 10pt;
+        margin-bottom: 14pt;
+    }
+    .emittente { max-width: 60%; }
+    .emittente .logo {
+        max-height: 52pt;
+        max-width: 230pt;
+        margin-bottom: 6pt;
+        display: block;
+    }
+    .emittente .nome {
+        font-size: 15pt;
+        font-weight: 700;
+        color: {{ accent }};
+        letter-spacing: .2pt;
+        margin: 0 0 3pt;
+    }
+    .emittente .meta { font-size: 8.5pt; color: #555c66; }
+
+    .doc-box {
+        text-align: right;
+        min-width: 34%;
+    }
+    .doc-box .tipo {
+        text-transform: uppercase;
+        letter-spacing: 1.2pt;
+        font-size: 9pt;
+        font-weight: 700;
+        color: #4a525c;
+    }
+    .doc-box .numero {
+        font-size: 20pt;
+        font-weight: 700;
+        color: #1a1d22;
+        margin: 2pt 0;
+    }
+    .doc-box .data { font-size: 9pt; color: #555c66; }
+
+    /* ---- Parti (cedente/cessionario) ---- */
+    .parti {
+        display: flex;
+        gap: 10pt;
+        margin-bottom: 14pt;
+    }
+    .parte {
+        flex: 1;
+        border: .6pt solid #dce0e5;
+        border-radius: 4pt;
+        padding: 8pt 10pt;
+        background: #fafbfc;
+    }
+    .parte .etichetta {
+        text-transform: uppercase;
+        font-size: 7pt;
+        letter-spacing: 1pt;
+        color: {{ accent }};
+        font-weight: 700;
+        margin-bottom: 4pt;
+    }
+    .parte .nome { font-weight: 700; font-size: 10.5pt; margin-bottom: 2pt; }
+    .parte .riga { font-size: 8.5pt; color: #4a525c; }
+
+    /* ---- Tabella righe ---- */
+    table.righe {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 14pt;
+    }
+    table.righe thead th {
+        background: {{ accent }};
+        color: #fff;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: .5pt;
+        font-weight: 600;
+        padding: 5pt 6pt;
+        text-align: left;
+    }
+    table.righe thead th.num { text-align: right; }
+    table.righe tbody td {
+        padding: 5pt 6pt;
+        font-size: 8.7pt;
+        border-bottom: .5pt solid #e6e9ed;
+        vertical-align: top;
+    }
+    table.righe tbody tr:nth-child(even) td { background: #f7f8fa; }
+    table.righe td.num { text-align: right; white-space: nowrap; }
+    table.righe td.idx { color: #9aa3ad; }
+    .desc-nota { color: #808893; font-size: 7.8pt; }
+
+    /* ---- Blocco riepilogo + totali ---- */
+    .fondo {
+        display: flex;
+        gap: 12pt;
+        align-items: flex-start;
+    }
+    .fondo .sinistra { flex: 1.15; }
+    .fondo .destra { flex: 1; }
+
+    table.iva {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+    }
+    table.iva th {
+        text-align: left;
+        color: #6b727b;
+        font-weight: 600;
+        border-bottom: .6pt solid #cfd4da;
+        padding: 3pt 5pt;
+        text-transform: uppercase;
+        font-size: 7pt;
+        letter-spacing: .4pt;
+    }
+    table.iva td {
+        padding: 3pt 5pt;
+        border-bottom: .5pt solid #eceff2;
+    }
+    table.iva td.num { text-align: right; white-space: nowrap; }
+
+    .totali { width: 100%; border-collapse: collapse; }
+    .totali td { padding: 4pt 8pt; font-size: 9pt; }
+    .totali td.lbl { color: #555c66; }
+    .totali td.val { text-align: right; white-space: nowrap; font-weight: 600; }
+    .totali tr.grande td {
+        border-top: 1.5pt solid {{ accent }};
+        font-size: 12.5pt;
+        font-weight: 700;
+        color: {{ accent }};
+        padding-top: 7pt;
+    }
+
+    .sezione-titolo {
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 1pt;
+        color: {{ accent }};
+        font-weight: 700;
+        margin: 0 0 5pt;
+    }
+
+    /* ---- Pagamento ---- */
+    .pagamento {
+        margin-top: 14pt;
+        border: .6pt solid #dce0e5;
+        border-radius: 4pt;
+        padding: 8pt 10pt;
+        background: #fafbfc;
+        font-size: 8.5pt;
+    }
+    .pagamento table { width: 100%; border-collapse: collapse; }
+    .pagamento td { padding: 2.5pt 4pt; vertical-align: top; }
+    .pagamento td.k { color: #808893; width: 26%; }
+    .iban { font-family: "Courier New", monospace; letter-spacing: .3pt; }
+
+    .causali {
+        margin-top: 10pt;
+        font-size: 8.3pt;
+        color: #4a525c;
+    }
+    .causali .k { color: #808893; text-transform: uppercase; font-size: 7pt; letter-spacing: .6pt; }
+
+    .foot-note {
+        margin-top: 16pt;
+        padding-top: 6pt;
+        border-top: .5pt solid #e6e9ed;
+        font-size: 7pt;
+        color: #aab0b8;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+{% for d in documenti %}
+<section class="fattura">
+
+    <div class="head">
+        <div class="emittente">
+            {% if logo_url %}<img class="logo" src="{{ logo_url }}" alt="">{% endif %}
+            <p class="nome">{{ d.cedente.denominazione }}</p>
+            <div class="meta">
+                {{ d.cedente.indirizzo_completo }}<br>
+                {% if d.cedente.partita_iva %}P.IVA {{ d.cedente.partita_iva }}{% endif %}
+                {% if d.cedente.codice_fiscale and d.cedente.codice_fiscale != d.cedente.id_codice %} · C.F. {{ d.cedente.codice_fiscale }}{% endif %}
+                {% if d.cedente.regime_fiscale %}<br>Regime fiscale: {{ d.cedente.regime_fiscale }}{% endif %}
+                {% if d.cedente.telefono or d.cedente.email %}<br>{% if d.cedente.telefono %}Tel. {{ d.cedente.telefono }}{% endif %}{% if d.cedente.email %} · {{ d.cedente.email }}{% endif %}{% endif %}
+            </div>
+        </div>
+        <div class="doc-box">
+            <div class="tipo">{{ d.tipo_documento|default:"Documento" }}</div>
+            <div class="numero">{{ d.numero }}</div>
+            <div class="data">del {{ d.data }}</div>
+        </div>
+    </div>
+
+    <div class="parti">
+        <div class="parte">
+            <div class="etichetta">Cedente / Prestatore</div>
+            <div class="nome">{{ d.cedente.denominazione }}</div>
+            <div class="riga">{{ d.cedente.indirizzo_completo }}</div>
+            {% if d.cedente.partita_iva %}<div class="riga">P.IVA {{ d.cedente.partita_iva }}</div>{% endif %}
+        </div>
+        <div class="parte">
+            <div class="etichetta">Cessionario / Committente</div>
+            <div class="nome">{{ d.cessionario.denominazione }}</div>
+            <div class="riga">{{ d.cessionario.indirizzo_completo }}</div>
+            {% if d.cessionario.partita_iva %}<div class="riga">P.IVA {{ d.cessionario.partita_iva }}</div>{% endif %}
+            {% if d.cessionario.codice_fiscale %}<div class="riga">C.F. {{ d.cessionario.codice_fiscale }}</div>{% endif %}
+            {% if d.codice_destinatario %}<div class="riga">Cod. destinatario: {{ d.codice_destinatario }}</div>{% endif %}
+        </div>
+    </div>
+
+    <table class="righe">
+        <thead>
+            <tr>
+                <th style="width:5%">#</th>
+                <th>Descrizione</th>
+                <th class="num" style="width:9%">Q.tà</th>
+                <th class="num" style="width:14%">Prezzo unit.</th>
+                <th class="num" style="width:8%">IVA %</th>
+                <th class="num" style="width:15%">Importo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in d.linee %}
+            <tr>
+                <td class="idx">{{ l.numero }}</td>
+                <td>
+                    {{ l.descrizione }}
+                    {% if l.natura %}<div class="desc-nota">{{ l.natura }}</div>{% endif %}
+                </td>
+                <td class="num">{{ l.quantita }}{% if l.unita_misura %} {{ l.unita_misura }}{% endif %}</td>
+                <td class="num">{{ l.prezzo_unitario }}</td>
+                <td class="num">{{ l.aliquota_iva }}</td>
+                <td class="num">{{ l.prezzo_totale }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="fondo">
+        <div class="sinistra">
+            <p class="sezione-titolo">Riepilogo IVA</p>
+            <table class="iva">
+                <thead>
+                    <tr>
+                        <th>Aliquota / Natura</th>
+                        <th class="num">Imponibile</th>
+                        <th class="num">Imposta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in d.riepiloghi %}
+                    <tr>
+                        <td>
+                            {% if r.natura %}{{ r.natura }}{% else %}{{ r.aliquota_iva }}%{% endif %}
+                            {% if r.riferimento_normativo %}<div class="desc-nota">{{ r.riferimento_normativo }}</div>{% endif %}
+                        </td>
+                        <td class="num">{{ r.imponibile }} {{ d.divisa }}</td>
+                        <td class="num">{{ r.imposta }} {{ d.divisa }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if d.causali %}
+            <div class="causali">
+                <div class="k">Causale</div>
+                {% for c in d.causali %}<div>{{ c }}</div>{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="destra">
+            <table class="totali">
+                {% if d.totale_imponibile %}
+                <tr><td class="lbl">Totale imponibile</td><td class="val">{{ d.totale_imponibile }} {{ d.divisa }}</td></tr>
+                {% endif %}
+                {% if d.totale_imposta %}
+                <tr><td class="lbl">Totale imposta</td><td class="val">{{ d.totale_imposta }} {{ d.divisa }}</td></tr>
+                {% endif %}
+                {% if d.bollo %}
+                <tr><td class="lbl">Imposta di bollo</td><td class="val">{{ d.bollo }} {{ d.divisa }}</td></tr>
+                {% endif %}
+                <tr class="grande"><td>Totale documento</td><td class="val">{{ d.importo_totale }} {{ d.divisa }}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    {% if d.pagamenti %}
+    <div class="pagamento">
+        <p class="sezione-titolo">Pagamento{% if d.condizioni_pagamento %} — {{ d.condizioni_pagamento }}{% endif %}</p>
+        <table>
+            {% for p in d.pagamenti %}
+            <tr>
+                <td class="k">Modalità</td>
+                <td>{{ p.modalita|default:"—" }}</td>
+                <td class="k">Importo</td>
+                <td>{{ p.importo }} {{ d.divisa }}</td>
+                <td class="k">Scadenza</td>
+                <td>{{ p.scadenza|default:"—" }}</td>
+            </tr>
+            {% if p.iban or p.istituto %}
+            <tr>
+                <td class="k">IBAN</td>
+                <td class="iban" colspan="3">{{ p.iban|default:"—" }}</td>
+                <td class="k">Banca</td>
+                <td>{{ p.istituto|default:"—" }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="foot-note">
+        Rappresentazione grafica della fattura elettronica (FatturaPA) — documento privo di valore fiscale.
+        Generato da p7m-apri.
+    </div>
+
+</section>
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,18 @@
+[project]
+name = "p7m-apri"
+version = "0.1.0"
+description = "Apri file .p7m firmati e visualizza fatture elettroniche XML (FatturaPA) come PDF."
+authors = [{ name = "Marco Pavanelli" }]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.14,<4.0"
+dependencies = [
+    "Django>=6.0.6,<7.0",
+    "gunicorn>=26.0.0",
+    "pyhanko[etsi,async-http]>=0.28",
+    "weasyprint>=69",
+]
+
+[tool.poetry]
+# App Django, non un pacchetto distribuibile: niente build/installazione del progetto.
+package-mode = false

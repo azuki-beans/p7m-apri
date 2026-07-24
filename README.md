@@ -34,6 +34,60 @@ sono **fittizi**, generati con un certificato di test:
 > [`docs/esempio/documento-esempio.pdf.p7m`](docs/esempio/documento-esempio.pdf.p7m).
 > Caricalo nell'app per riprodurre lo screenshot qui sopra.
 
+## Visualizzare le fatture elettroniche (XML → PDF)
+
+La stessa app include un **visualizzatore di fatture elettroniche**: carichi una
+fattura **FatturaPA** in formato `.xml` (o `.p7m` firmato) e la vedi impaginata
+come apparirebbe **su carta**, pronta da scaricare in PDF. La trovi su
+**`/fatture/`** o dal link in home.
+
+<p align="center">
+  <img src="docs/fatture-home.png" alt="Pagina di caricamento della fattura" width="430">
+  &nbsp;
+  <img src="docs/fattura-pdf.png" alt="Fattura FatturaPA impaginata in PDF" width="330">
+</p>
+
+> **Provalo:** nel repo ci sono alcune fatture di esempio (i tracciati ufficiali
+> dell'Agenzia delle Entrate) in [`test_samples/`](test_samples/) — caricane una
+> `.xml` per riprodurre lo screenshot qui sopra.
+
+### Da un `.p7m` alla sua fattura
+
+Le fatture arrivano spesso firmate come `.p7m`. Se apri un `.p7m` dalla home e il
+contenuto è una fattura, l'app se ne accorge e ti propone di **visualizzarla in
+PDF** con un clic, senza estrazione manuale (in alternativa puoi caricare il
+`.p7m` direttamente su `/fatture/`). Nel repo c'è un esempio già firmato con
+un'identità inventata:
+[`test_samples/fattura-firmata-esempio.xml.p7m`](test_samples/fattura-firmata-esempio.xml.p7m).
+
+<p align="center">
+  <img src="docs/fatture-da-p7m.png" alt="Bottone per visualizzare come PDF la fattura estratta da un .p7m" width="430">
+</p>
+
+### Personalizzare l'aspetto
+
+Il PDF si adatta al brand aziendale tramite due variabili d'ambiente:
+`FATTURA_ACCENT` (colore principale in HEX) e `FATTURA_LOGO_URL` (URL del logo
+mostrato in intestazione). Vedi la tabella più sotto.
+
+### Usarlo come API
+
+Lo stesso servizio è disponibile via HTTP: invia una fattura `.xml` o `.p7m` in
+`POST` e ricevi il PDF.
+
+```bash
+# file multipart
+curl -F file=@fattura.xml http://localhost:8000/fatture/api/pdf/ -o fattura.pdf
+
+# byte grezzi nel corpo, con colore del tema personalizzato (%23 = '#')
+curl --data-binary @fattura.xml.p7m \
+     "http://localhost:8000/fatture/api/pdf/?accent=%231D4ED8" -o fattura.pdf
+```
+
+Parametri query opzionali: `accent` (HEX del tema), `dl=1` per forzare il
+download, `filename` per il corpo grezzo. In caso di errore la risposta è JSON
+`{"error": …}`.
+
 ## Avvio rapido (in locale)
 
 Serve solo [Docker](https://docs.docker.com/get-docker/) **oppure**
@@ -77,6 +131,8 @@ database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
 | `TRUST_LIST_TERRITORIES` | Paesi delle Trusted List, es. `IT` (default) o `IT,FR`; vuoto = tutta la UE. |
 | `SIGNATURE_REVOCATION_MODE` | Controllo revoca: `soft-fail` (default), `hard-fail`, `require`. |
 | `SIGNATURE_TIME_TOLERANCE` | Tolleranza in secondi sui tempi OCSP/CRL (default `60`); alza il valore se l'orologio del server è impreciso. |
+| `FATTURA_ACCENT` | Colore principale del PDF fattura in HEX (default `#8A2230`). |
+| `FATTURA_LOGO_URL` | URL assoluto del logo aziendale mostrato in intestazione fattura. |
 | `PORT` | Porta su cui ascoltare (default `8000`); Cloud Run e simili la impostano da soli. |
 | `UMAMI_SRC` | URL dello script Umami (es. `https://cloud.umami.is/script.js`); vuoto = nessun analytics. |
 | `UMAMI_WEBSITE_ID` | ID del sito su Umami; va valorizzato insieme a `UMAMI_SRC`. |
@@ -84,68 +140,11 @@ database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
 ## Deploy gratuito su Google Cloud Run
 
 Cloud Run esegue il container senza volumi e scala a zero quando nessuno lo usa
-(rientra nel free tier). Il filesystem è effimero: il DB SQLite e la cache delle
-Trusted List vivono solo finché l'istanza è attiva, quindi dopo un avvio a
-freddo la **prima** verifica eIDAS torna lenta (riscarica la LOTL). Per
-l'estrazione dei PDF non cambia nulla.
+(rientra nel free tier). Bastano l'[SDK gcloud](https://cloud.google.com/sdk/docs/install)
+e un progetto GCP, poi `gcloud run deploy p7m-apri --source .`.
 
-Serve l'[SDK gcloud](https://cloud.google.com/sdk/docs/install) e un progetto GCP.
-
-```bash
-# 1. Imposta il progetto e abilita le API necessarie
-gcloud config set project IL-TUO-PROGETTO
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
-
-# 2. Primo deploy: builda dal Dockerfile e pubblica il servizio
-gcloud run deploy p7m-apri \
-  --source . \
-  --region europe-west1 \
-  --allow-unauthenticated \
-  --memory 512Mi \
-  --set-env-vars DJANGO_SECRET_KEY=$(python -c "import secrets;print(secrets.token_urlsafe(50))")
-```
-
-Al termine `gcloud` stampa l'URL del servizio (es.
-`https://p7m-apri-xxxx.europe-west1.run.app`). Le richieste `POST` del form
-hanno bisogno che quell'origine sia fidata, quindi aggiornala subito:
-
-```bash
-# 3. Comunica a Django il proprio dominio (usa l'URL ottenuto sopra)
-gcloud run services update p7m-apri --region europe-west1 \
-  --update-env-vars DJANGO_ALLOWED_HOSTS=p7m-apri-xxxx.europe-west1.run.app,CSRF_TRUSTED_ORIGINS=https://p7m-apri-xxxx.europe-west1.run.app
-```
-
-Per attivare gli analytics Umami aggiungi nello stesso modo
-`UMAMI_SRC` e `UMAMI_WEBSITE_ID`. Per aggiornare l'app in futuro basta
-rilanciare il comando `gcloud run deploy --source .`.
-
-### Chiave segreta con Secret Manager (consigliato in produzione)
-
-Passare `DJANGO_SECRET_KEY` tra le env la lascia in chiaro nella configurazione
-del servizio. Meglio custodirla in **Secret Manager** e farla leggere a Cloud
-Run a runtime.
-
-```bash
-# 1. Abilita l'API e crea il secret con un valore casuale
-gcloud services enable secretmanager.googleapis.com
-python -c "import secrets;print(secrets.token_urlsafe(50))" \
-  | gcloud secrets create django-secret-key --data-file=-
-
-# 2. Concedi al service account di Cloud Run il permesso di leggerlo
-PROJECT_NUMBER=$(gcloud projects describe $(gcloud config get-value project) --format='value(projectNumber)')
-gcloud secrets add-iam-policy-binding django-secret-key \
-  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-
-# 3. Collega il secret alla variabile d'ambiente (al posto di --set-env-vars DJANGO_SECRET_KEY=...)
-gcloud run services update p7m-apri --region europe-west1 \
-  --update-secrets DJANGO_SECRET_KEY=django-secret-key:latest
-```
-
-`:latest` segue automaticamente l'ultima versione: per ruotare la chiave basta
-aggiungere una nuova versione al secret (`gcloud secrets versions add
-django-secret-key --data-file=-`) e riavviare il servizio. Lo stesso meccanismo
-vale per qualsiasi altra variabile sensibile.
+👉 **Guida passo-passo:** [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) —
+primo deploy, dominio/CSRF e chiave segreta con Secret Manager.
 
 ## Compilare l'immagine da sorgente
 

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Visualizzatore fatture elettroniche XML — anteprima e PDF | p7m-apri</title>
+    <meta name="description" content="Carica una fattura elettronica in formato XML (FatturaPA) e visualizzala come apparirebbe su carta, con anteprima PDF e download. Gratis, dal browser, senza installare nulla.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImF6dWtpLWJlYW5zIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmVhbiIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNDMjQ5NUEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN0ExRjJCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iI0Y1RUFENyIvPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzMiAzMikiPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzIiIHJ4PSIxNyIgcnk9IjIzIiBmaWxsPSJ1cmwoI2JlYW4pIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjUiIGN5PSIyMiIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjE4Ii8+CiAgICA8cmVjdCB4PSIyOSIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjQwIiByeD0iMyIgZmlsbD0iI0Y1RUFENyIvPgogIDwvZz4KPC9zdmc+Cg==">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    {% if umami_src and umami_website_id %}
+    <script defer src="{{ umami_src }}" data-website-id="{{ umami_website_id }}"></script>
+    {% endif %}
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+            background: #f4f5f7; color: #1a1a1a; padding: 2rem 1rem;
+        }
+        .card {
+            background: #fff; max-width: 620px; width: 100%;
+            padding: 2rem; border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.08);
+        }
+        .nav { max-width: 620px; width: 100%; margin: 0 auto .75rem;
+               font-size: .85rem; }
+        .nav a { color: #8A2230; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
+        p.sub { margin: 0 0 1.5rem; color: #666; font-size: .95rem; }
+        input[type=file] {
+            width: 100%; padding: 2.5rem 1rem; border: 2px dashed #bbb;
+            border-radius: 8px; background: #fafafa; margin-bottom: 1rem;
+            cursor: pointer; text-align: center; font-size: .95rem;
+        }
+        input[type=file]:hover { border-color: #8A2230; background: #fdf3f4; }
+        button {
+            width: 100%; padding: .8rem; border: 0; border-radius: 8px;
+            background: #8A2230; color: #fff; font-size: 1rem;
+            cursor: pointer; font-weight: 600;
+        }
+        button:hover { background: #6f1a26; }
+        .indicator { display: none; margin-top: 1rem; color: #666; }
+        .htmx-request .indicator { display: block; }
+        .htmx-request button { opacity: .6; pointer-events: none; }
+        footer { margin-top: 1.5rem; font-size: .8rem; color: #999; }
+        code { background:#f0f0f2; padding:.05rem .3rem; border-radius:4px; }
+        a { color: #8A2230; }
+        .info {
+            max-width: 620px; width: 100%; margin: 2rem auto 0;
+            color: #374151; font-size: .95rem; line-height: 1.6;
+        }
+        .info h2 { font-size: 1.25rem; margin: 2rem 0 .5rem; color: #1a1a1a; }
+        .info h3 { font-size: 1rem; margin: 1.25rem 0 .25rem; color: #1a1a1a; }
+        .info p { margin: 0 0 .75rem; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="{% url 'index' %}">← Apri file .p7m</a>
+    </nav>
+    <main class="card">
+        <h1>📄 Visualizzatore fatture elettroniche</h1>
+        <p class="sub">Carica una <strong>fattura elettronica</strong> (FatturaPA)
+            in formato <code>.xml</code> o <code>.p7m</code>: la trasformiamo nel
+            PDF così come apparirebbe su carta, pronto da consultare e scaricare.</p>
+
+        <form hx-post="{% url 'fattura_render' %}"
+              hx-target="#result"
+              hx-encoding="multipart/form-data"
+              hx-disabled-elt="find button"
+              hx-on::after-request="this.reset()">
+            {% csrf_token %}
+            <input type="file" name="file" accept=".xml,.p7m,text/xml,application/xml" required>
+            <button type="submit">Genera anteprima PDF</button>
+            <div class="indicator">Generazione del PDF in corso…</div>
+        </form>
+
+        <div id="result"></div>
+
+        <footer>
+            Nessun file viene conservato: il PDF generato è rimosso
+            automaticamente dopo un'ora.
+        </footer>
+    </main>
+
+    <article class="info">
+        <h2>Come funziona</h2>
+        <p>La <strong>fattura elettronica</strong> è un file <code>.xml</code>
+        che segue il tracciato <strong>FatturaPA</strong> dell'Agenzia delle
+        Entrate: leggibile dai gestionali, ma poco pratico da consultare a
+        occhio. Questo strumento lo impagina in un <strong>PDF ordinato</strong>
+        con dati del cedente e del cliente, righe di dettaglio, riepilogo IVA,
+        totali e modalità di pagamento.</p>
+        <p>Trascina o seleziona il file qui sopra e premi
+        <em>Genera anteprima PDF</em>: vedrai subito la fattura impaginata e
+        potrai scaricarla. Se la fattura ti è arrivata come <code>.p7m</code>
+        (XML firmato), puoi caricarlo così com'è: l'XML viene estratto
+        automaticamente.</p>
+
+        <h2>Usarlo come API</h2>
+        <p>Lo stesso servizio è disponibile via HTTP: invia una fattura
+        <code>.xml</code> o <code>.p7m</code> in <code>POST</code> e ricevi il
+        PDF.</p>
+        <pre style="background:#0f172a;color:#e2e8f0;padding:.9rem 1rem;
+                    border-radius:8px;overflow:auto;font-size:.82rem;"><code># file multipart
+curl -F file=@fattura.xml {{ api_url }} -o fattura.pdf
+
+# oppure byte grezzi nel corpo, con colore tema personalizzato
+curl --data-binary @fattura.xml.p7m \
+     "{{ api_url }}?accent=%231D4ED8" -o fattura.pdf</code></pre>
+        <p style="font-size:.85rem;color:#6b7280;">Parametri query opzionali:
+        <code>accent</code> (colore HEX del tema, es. <code>%231D4ED8</code>),
+        <code>dl=1</code> per forzare il download, <code>filename</code> per il
+        corpo grezzo. In caso di errore la risposta è JSON
+        <code>{"error": …}</code>.</p>
+
+        <h2>Domande frequenti</h2>
+        <h3>I miei file vengono conservati?</h3>
+        <p>No. La fattura viene elaborata in memoria e il PDF risultante è
+        tenuto solo per il download, poi cancellato automaticamente dopo un'ora.</p>
+        <h3>Il PDF ha valore fiscale?</h3>
+        <p>No: è una <strong>rappresentazione grafica</strong> di cortesia. Il
+        documento con valore legale resta l'XML firmato originale.</p>
+    </article>
+</body>
+</html>

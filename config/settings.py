@@ -16,12 +16,21 @@ CSRF_TRUSTED_ORIGINS = [
 
 INSTALLED_APPS = [
     "converter",
+    "fatture",
 ]
 
 # Analytics opzionale (Umami): se entrambe le variabili sono valorizzate, la
 # home page carica lo script. Vuote = nessun tracciamento.
 UMAMI_SRC = os.environ.get("UMAMI_SRC", "")
 UMAMI_WEBSITE_ID = os.environ.get("UMAMI_WEBSITE_ID", "")
+
+# Personalizzazione della rappresentazione PDF delle fatture (app fatture),
+# così da adattare il deploy all'azienda senza toccare il codice:
+# - FATTURA_ACCENT: colore principale del tema in HEX (es. #1D4ED8). Valori non
+#   validi vengono ignorati e si usa il default (vedi fatture.pdf).
+# - FATTURA_LOGO_URL: URL assoluto del logo aziendale mostrato in intestazione.
+FATTURA_ACCENT = os.environ.get("FATTURA_ACCENT", "#8A2230")
+FATTURA_LOGO_URL = os.environ.get("FATTURA_LOGO_URL", "")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

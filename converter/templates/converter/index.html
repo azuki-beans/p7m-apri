@@ -57,6 +57,19 @@
         .htmx-request .indicator { display: block; }
         .htmx-request button { opacity: .6; pointer-events: none; }
         footer { margin-top: 1.5rem; font-size: .8rem; color: #999; }
+        .callout-fattura {
+            display: flex; align-items: center; gap: .7rem;
+            margin: 0 0 1.5rem; padding: .85rem 1rem;
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            border-left: 4px solid #2563eb; border-radius: 8px;
+            color: #1e3a8a; text-decoration: none; font-size: .92rem;
+            line-height: 1.4;
+        }
+        .callout-fattura:hover { background: #e0edff; }
+        .callout-fattura .cf-icon { font-size: 1.4rem; line-height: 1; }
+        .callout-fattura code { background: #dbeafe; color: #1e40af;
+            padding: .02rem .3rem; border-radius: 4px; font-size: .85em; }
+        .callout-fattura .cf-cta { white-space: nowrap; font-weight: 700; color: #1d4ed8; }
         .opt { display: block; margin-bottom: 1rem; font-size: .85rem; color: #555; cursor: pointer; }
         .opt span { color: #888; }
         .copyright { margin: .75rem 0 0; font-size: .72rem; color: #aaa; }
@@ -97,6 +110,12 @@
         </h1>
         <p class="sub">Carica un file <code>.p7m</code> firmato digitalmente:
             estrai il documento originale e verifica la firma al volo.</p>
+        <a href="{% url 'fatture' %}" class="callout-fattura">
+            <span class="cf-icon">📄</span>
+            <span>Devi <strong>visualizzare una fattura</strong> in formato
+                <code>.p7m</code> o <code>.xml</code>?
+                <span class="cf-cta">Clicca qui →</span></span>
+        </a>
 
         <form hx-post="{% url 'verify' %}"
               hx-target="#result"

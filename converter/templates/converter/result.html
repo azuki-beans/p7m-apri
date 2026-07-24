@@ -90,6 +90,14 @@
         Nota: la catena dei certificati CA non viene validata.
     </div>
     {% endif %}
+    {% if fattura_url %}
+    <a href="{{ fattura_url }}"
+       style="display:block;margin-top:1rem;padding:.7rem;text-align:center;
+              background:#8A2230;color:#fff;border-radius:8px;
+              text-decoration:none;font-weight:600;">
+        📄 Il file è una fattura elettronica — Visualizzala come PDF
+    </a>
+    {% endif %}
     <a href="{{ download_url }}"
        style="display:block;margin-top:1rem;padding:.7rem;text-align:center;
               background:#16a34a;color:#fff;border-radius:8px;

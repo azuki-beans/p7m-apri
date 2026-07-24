@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fattura — anteprima PDF | p7m-apri</title>
+    <meta name="robots" content="noindex">
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            margin: 0; min-height: 100vh; background: #f4f5f7; color: #1a1a1a;
+            padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center;
+        }
+        .card {
+            background: #fff; max-width: 900px; width: 100%;
+            padding: 1.5rem 2rem 2rem; border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.08);
+        }
+        .nav { max-width: 900px; width: 100%; margin: 0 auto .75rem; font-size: .85rem; }
+        .nav a { color: #8A2230; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        h1 { margin: 0 0 1rem; font-size: 1.4rem; }
+        a { color: #8A2230; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="{% url 'index' %}">← Home</a> ·
+        <a href="{% url 'fatture' %}">Carica un'altra fattura</a>
+    </nav>
+    <main class="card">
+        <h1>📄 Fattura estratta dal file .p7m</h1>
+        {% include "fatture/result.html" %}
+    </main>
+</body>
+</html>

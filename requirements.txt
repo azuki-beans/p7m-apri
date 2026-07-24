@@ -1,3 +1,0 @@
-Django>=6.0.6
-gunicorn>=26.0.0
-pyhanko[etsi,async-http]>=0.28

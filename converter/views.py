@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
+from fatture.parser import is_fattura
+
 from .extractor import extract
 from .models import Conversion
 from .validation import validate_signature
@@ -60,6 +62,11 @@ def verify(request):
         "conversion": conversion,
         "download_url": reverse("download", args=[conversion.id]),
     }
+    # Se il contenuto estratto è una fattura elettronica, offri di visualizzarla.
+    if is_fattura(bytes(result.content)):
+        context["fattura_url"] = reverse(
+            "fattura_da_conversione", args=[conversion.id]
+        )
     # Validazione legale (eIDAS) solo se richiesta: è lenta e richiede rete.
     if request.POST.get("validate") == "on":
         context["validation"] = validate_signature(raw)
