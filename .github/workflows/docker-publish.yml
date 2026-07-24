@@ -1,10 +1,15 @@
 name: Build and publish Docker image
 
+# Come in vdv_sasa: la build parte solo quando si pubblica un tag di versione
+# (es. v0.1.0), oltre all'avvio manuale. L'immagine viene taggata con la versione.
 on:
   push:
-    branches: [main]
     tags: ["v*"]
   workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
@@ -32,10 +37,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Tag versione (v1.2.3 e 1.2.3), 'latest' all'ultima release e lo SHA.
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
+            type=ref,event=tag
             type=semver,pattern={{version}}
+            type=raw,value=latest
             type=sha
 
       - name: Set up QEMU
