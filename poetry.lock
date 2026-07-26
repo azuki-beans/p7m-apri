@@ -680,6 +680,18 @@ argon2 = ["argon2-cffi (>=23.1.0)"]
 bcrypt = ["bcrypt (>=4.1.1)"]
 
 [[package]]
+name = "fatturapa"
+version = "0.1.0"
+description = "Parser della Fattura Elettronica italiana (FatturaPA v1.2) in sola standard library."
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "fatturapa-0.1.0-py3-none-any.whl", hash = "sha256:feccfca49f4cb4aad014419796e7a46bc682d6952978171a14203c2bbe8fd255"},
+    {file = "fatturapa-0.1.0.tar.gz", hash = "sha256:0c5c0fef5cc4cc6d9b5bbd2c523851d505a1fd5c28e80c0b95a1feae9b3a8a0d"},
+]
+
+[[package]]
 name = "fonttools"
 version = "4.63.0"
 description = "Tools to manipulate font files"
@@ -2064,4 +2076,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14,<4.0"
-content-hash = "efdf3b98f260f154980302c962fc762b9c3d211dc0ee8a96dd85b95881eefd8f"
+content-hash = "e7db66ae55e29b32d229225a4bf3504f34a705a0eda9d12f483bbfa3e1366b93"

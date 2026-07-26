@@ -2,6 +2,12 @@
   <img src="brand/azuki-beans-logo.svg" alt="azuki-beans" width="300">
 </p>
 
+<p align="center">
+  <a href="https://github.com/azuki-beans/p7m-apri/tags"><img src="https://img.shields.io/github/v/tag/azuki-beans/p7m-apri?sort=semver&label=versione&color=8A2230" alt="Ultima versione"></a>
+  <a href="https://github.com/azuki-beans/p7m-apri/pkgs/container/p7m-apri"><img src="https://img.shields.io/badge/ghcr.io-p7m--apri-2496ED?logo=docker&logoColor=white" alt="Immagine Docker su ghcr.io"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licenza-MIT-informational" alt="Licenza MIT"></a>
+</p>
+
 # p7m-apri
 
 Estrai il documento originale (di solito un PDF) da un file `.p7m`, cioè un file
@@ -155,6 +161,21 @@ git clone https://github.com/azuki-beans/p7m-apri.git
 cd p7m-apri
 docker build -t p7m-apri .
 docker run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
+```
+
+## Rilasci (versioni)
+
+La versione mostrata dal badge in cima è l'ultimo **tag Git** `vX.Y.Z`. La
+pubblicazione di un tag è anche ciò che **avvia la build**: il workflow GitHub
+Actions builda l'immagine multi-arch e la pubblica su `ghcr.io` taggata con la
+versione (`vX.Y.Z`, `X.Y.Z`) e `latest`.
+
+Per rilasciare una nuova versione:
+
+```bash
+# allinea la versione nel pyproject.toml, poi crea e pubblica il tag
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 ## Come funziona (sotto il cofano)

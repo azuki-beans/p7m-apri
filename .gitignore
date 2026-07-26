@@ -7,6 +7,7 @@ venv/
 estratti/
 data_samples/
 .DS_Store
+invoice_samples/
 
 # Segreti locali e stack di test (non committati).
 .env
