@@ -1,7 +1,7 @@
 # Autori
 
 Elenco delle persone e delle organizzazioni che hanno contribuito a
-**p7m-apri**, riferito dal campo `legal.authorsFile` di `publiccode.yml`.
+**p7m-apri**.
 
 ## Manutentori
 
