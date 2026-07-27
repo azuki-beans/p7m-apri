@@ -194,6 +194,33 @@ openssl smime -verify -in documento.pdf.p7m -inform DER -noverify -out documento
   `documento.pdf`. Se il `.p7m` non la conteneva (`documento.p7m`), l'output sarà
   `documento` e dovrai aggiungere l'estensione a mano.
 
+## Contribuire
+
+Segnalazioni, proposte e pull request sono benvenute. Come partecipare,
+convenzioni di codice e tempi di risposta sono in
+[CONTRIBUTING.md](CONTRIBUTING.md); partecipando accetti il [codice di
+condotta](CODE_OF_CONDUCT.md).
+
+Per le **vulnerabilità di sicurezza non aprire una issue pubblica**: segui la
+procedura riservata in [SECURITY.md](SECURITY.md).
+
+Le modifiche di ogni versione sono annotate in [CHANGELOG.md](CHANGELOG.md).
+
+## Software open source per la Pubblica Amministrazione
+
+Il progetto è pubblicato secondo le [Linee guida su acquisizione e riuso di
+software per le pubbliche
+amministrazioni](https://docs.italia.it/italia/developers-italia/lg-acquisizione-e-riuso-software-per-pa-docs/)
+di AGID. I metadati sono descritti in
+[`publiccode.yml`](publiccode.yml) secondo lo [standard
+publiccode.yml](https://yml.publiccode.tools/), il formato usato dal catalogo
+[Developers Italia](https://developers.italia.it/).
+
+Una pubblica amministrazione può quindi **riusare liberamente** questo
+software: la licenza MIT ne consente uso, modifica e ridistribuzione senza
+autorizzazioni preventive né costi di licenza. L'applicazione si installa come
+singola immagine container e non richiede componenti proprietari.
+
 ## Licenza
 
 Distribuito con licenza [MIT](LICENSE). © azuki-beans.

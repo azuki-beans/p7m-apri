@@ -1,0 +1,25 @@
+name: Validate publiccode.yml
+
+# Il file publiccode.yml descrive i metadati del software per il catalogo
+# Developers Italia: se non è valido, il crawler non indicizza il progetto.
+# Meglio accorgersene qui che dopo la pubblicazione.
+on:
+  push:
+    branches: [main]
+    paths: ["publiccode.yml"]
+  pull_request:
+    paths: ["publiccode.yml"]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Valida publiccode.yml
+        uses: italia/publiccode-parser-action@v1.5.1
+        with:
+          publiccode: publiccode.yml
+          comment-on-pr: true

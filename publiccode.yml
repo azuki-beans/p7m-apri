@@ -1,0 +1,155 @@
+# Metadati del software secondo lo standard publiccode.yml
+# https://yml.publiccode.tools — richiesto per la pubblicazione nel catalogo
+# Developers Italia (Linee Guida AGID su acquisizione e riuso del software).
+publiccodeYmlVersion: "0.4"
+
+name: p7m-apri
+url: "https://github.com/azuki-beans/p7m-apri"
+landingURL: "https://github.com/azuki-beans/p7m-apri"
+
+softwareVersion: "0.1.3"
+releaseDate: "2026-07-26"
+
+logo: brand/azuki-beans-logo.png
+
+platforms:
+  - web
+  - linux
+
+categories:
+  - document-management
+  - e-signature
+  - billing-and-invoicing
+
+developmentStatus: beta
+
+softwareType: standalone/web
+
+intendedAudience:
+  # Il tracciato FatturaPA e la firma .p7m sono specificità italiane.
+  countries:
+    - it
+  scope:
+    - government
+    - local-authorities
+    - finance-and-economic-development
+
+roadmap: "https://github.com/azuki-beans/p7m-apri/issues"
+
+inputTypes:
+  - application/pkcs7-mime
+  - application/xml
+  - text/xml
+
+outputTypes:
+  - application/pdf
+  - application/octet-stream
+
+description:
+  it:
+    localisedName: p7m-apri
+    # Massimo 35 caratteri, vincolo dello standard.
+    genericName: Estrattore .p7m e lettore fatture
+
+    shortDescription: >-
+      Estrae il documento originale da un file .p7m firmato digitalmente e
+      visualizza le fatture elettroniche FatturaPA come PDF impaginato.
+
+    longDescription: >-
+      p7m-apri è un'applicazione web che risolve due problemi ricorrenti per
+      chi lavora con documenti amministrativi italiani.
+
+      Il primo è l'apertura dei file con estensione `.p7m`: documenti firmati
+      digitalmente con firma CMS/PKCS#7, il formato usato in Italia per i
+      documenti con valore legale. Caricando il file, l'applicazione estrae il
+      documento originale (di solito un PDF) e ne verifica l'integrità della
+      firma. Su richiesta esegue anche una validazione legale eIDAS completa:
+      il certificato del firmatario viene confrontato con le EU Trusted List,
+      che includono i prestatori di servizi fiduciari qualificati italiani
+      accreditati AgID, restituendo dati del firmatario, qualificazione del
+      certificato e catena di certificazione.
+
+      Il secondo è la lettura delle fatture elettroniche. Il file XML in
+      tracciato FatturaPA versione 1.2 (FPR12 e FPA12) non è leggibile da una
+      persona: l'applicazione lo trasforma in un PDF impaginato come una
+      fattura su carta, con dati delle parti, righe di dettaglio, riepilogo IVA,
+      totali e condizioni di pagamento. Sono gestiti anche i lotti con più
+      documenti nello stesso file e le fatture firmate `.p7m`, estratte
+      automaticamente prima della lettura. È disponibile un endpoint HTTP che
+      restituisce direttamente il PDF, per l'integrazione con altri sistemi.
+
+      Nessun documento caricato viene mai scritto su disco: i file sono tenuti
+      in memoria e in un archivio temporaneo cancellato automaticamente dopo
+      un'ora. L'applicazione non richiede autenticazione, non profila gli utenti
+      e si distribuisce come singola immagine container, eseguibile su
+      infrastruttura propria o su piattaforme serverless.
+
+    documentation: "https://github.com/azuki-beans/p7m-apri#readme"
+    apiDocumentation: "https://github.com/azuki-beans/p7m-apri#usarlo-come-api"
+
+    features:
+      - Estrazione del documento originale da file .p7m (CMS/PKCS#7)
+      - Verifica dell'integrità della firma digitale
+      - Validazione legale eIDAS sulle EU Trusted List (AgID)
+      - Visualizzazione delle fatture FatturaPA XML come PDF impaginato
+      - Supporto dei lotti con più fatture nello stesso file
+      - Lettura di fatture elettroniche firmate .p7m
+      - API HTTP per la conversione XML in PDF
+      - Nessuna conservazione dei documenti caricati
+
+    screenshots:
+      - docs/screenshot.png
+      - docs/esempio/p7m_done.png
+      - docs/fatture-home.png
+      - docs/fattura-pdf.png
+
+legal:
+  license: MIT
+  mainCopyrightOwner: azuki-beans
+  repoOwner: azuki-beans
+  authorsFile: AUTHORS.md
+
+maintenance:
+  type: community
+
+  contacts:
+    - name: Marco Pavanelli
+      email: "marco.pavanelli@gmail.com"
+
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - it
+
+dependsOn:
+  open:
+    # L'estrazione dai .p7m è una chiamata a OpenSSL: è l'unico requisito
+    # di sistema indispensabile. Il resto arriva con l'immagine container.
+    - name: OpenSSL
+      versionMin: "3.0"
+      optional: false
+    - name: SQLite
+      versionMin: "3.35"
+      optional: false
+    # Serve solo al visualizzatore di fatture (impaginazione del PDF).
+    - name: WeasyPrint
+      versionMin: "69"
+      optional: true
+    - name: Docker
+      optional: true
+
+it:
+  countryExtensionVersion: "0.2"
+
+  conforme:
+    lineeGuidaDesign: false
+    modelloInteroperabilita: false
+    misureMinimeSicurezza: false
+    gdpr: false
+
+  piattaforme:
+    spid: false
+    cie: false
+    anpr: false
+    pagopa: false
+    io: false

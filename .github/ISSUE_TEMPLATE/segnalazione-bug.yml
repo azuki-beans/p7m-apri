@@ -1,0 +1,90 @@
+name: Segnalazione di un problema
+description: Qualcosa non funziona come dovrebbe
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione.
+
+        ⚠️ **Non allegare documenti reali.** Un file `.p7m` o una fattura
+        contengono dati personali e commerciali. Usa i file di esempio in
+        `docs/esempio/` e `test_samples/`, oppure genera un file di prova con un
+        certificato autofirmato (istruzioni in `CONTRIBUTING.md`).
+
+        Per le vulnerabilità di sicurezza **non usare questo modulo**: segui la
+        procedura riservata descritta in `SECURITY.md`.
+
+  - type: textarea
+    id: descrizione
+    attributes:
+      label: Cosa succede
+      description: Cosa ti aspettavi e cosa è successo invece.
+    validations:
+      required: true
+
+  - type: textarea
+    id: riproduzione
+    attributes:
+      label: Come riprodurlo
+      description: I passi da seguire per rivedere il problema.
+      placeholder: |
+        1. Apro la pagina /fatture/
+        2. Carico il file …
+        3. Vedo …
+    validations:
+      required: true
+
+  - type: input
+    id: versione
+    attributes:
+      label: Versione
+      description: Il tag Git o il tag dell'immagine Docker che stai usando.
+      placeholder: "v0.1.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: esecuzione
+    attributes:
+      label: Come esegui l'applicazione
+      options:
+        - Immagine Docker/Podman
+        - Docker Compose
+        - Google Cloud Run
+        - In locale con Poetry
+        - Istanza dimostrativa online
+        - Altro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: funzione
+    attributes:
+      label: Funzione interessata
+      options:
+        - Estrazione da file .p7m
+        - Validazione legale eIDAS della firma
+        - Visualizzazione delle fatture XML
+        - API HTTP
+        - Documentazione
+        - Altro / non so
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Messaggi d'errore o log
+      description: Incollali come testo, non come immagine.
+      render: text
+
+  - type: checkboxes
+    id: verifiche
+    attributes:
+      label: Verifiche
+      options:
+        - label: Ho cercato fra le issue già aperte e chiuse e non ne ho trovata una analoga.
+          required: true
+        - label: Non ho allegato documenti contenenti dati reali.
+          required: true

@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Segnalare una vulnerabilità di sicurezza
+    url: https://github.com/azuki-beans/p7m-apri/security/advisories/new
+    about: >-
+      Non aprire una issue pubblica per i problemi di sicurezza: usa la
+      segnalazione riservata, come descritto in SECURITY.md.
+  - name: Domande e discussioni
+    url: https://github.com/azuki-beans/p7m-apri/discussions
+    about: Per dubbi sull'uso dell'applicazione o proposte ancora da mettere a fuoco.

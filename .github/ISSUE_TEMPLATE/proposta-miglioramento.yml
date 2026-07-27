@@ -1,0 +1,39 @@
+name: Proposta di miglioramento
+description: Suggerisci una nuova funzionalità o un cambiamento
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la proposta. Descrivi prima il **problema** che vorresti
+        risolvere: aiuta a capire se rientra negli obiettivi del progetto,
+        prima ancora di discutere la soluzione tecnica.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Quale problema risolve
+      description: In quale situazione concreta l'applicazione oggi non ti aiuta.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Cosa proponi
+      description: Come immagini che dovrebbe funzionare.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternative considerate
+      description: Altri modi di risolvere lo stesso problema che hai valutato o che usi oggi.
+
+  - type: checkboxes
+    id: contributo
+    attributes:
+      label: Contributo
+      options:
+        - label: Sono disponibile a lavorare a questa modifica e proporre una pull request.
