@@ -3,12 +3,18 @@ name: Validate publiccode.yml
 # Il file publiccode.yml descrive i metadati del software per il catalogo
 # Developers Italia: se non è valido, il crawler non indicizza il progetto.
 # Meglio accorgersene qui che dopo la pubblicazione.
+# Il filtro include anche questo workflow, altrimenti una modifica al solo
+# file del workflow non farebbe partire nulla e resterebbe non verificata.
 on:
   push:
     branches: [main]
-    paths: ["publiccode.yml"]
+    paths:
+      - "publiccode.yml"
+      - ".github/workflows/publiccode-validate.yml"
   pull_request:
-    paths: ["publiccode.yml"]
+    paths:
+      - "publiccode.yml"
+      - ".github/workflows/publiccode-validate.yml"
   workflow_dispatch:
 
 jobs:
