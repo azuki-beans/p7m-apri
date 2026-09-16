@@ -57,6 +57,11 @@ def verify(request):
         content_type=result.content_type,
         verified=result.verified,
         signer=result.signer,
+        signatures=[
+            {"level": layer.level, "signers": layer.signers,
+             "verified": layer.verified}
+            for layer in result.layers
+        ],
     )
     context = {
         "conversion": conversion,
@@ -68,8 +73,13 @@ def verify(request):
             "fattura_da_conversione", args=[conversion.id]
         )
     # Validazione legale (eIDAS) solo se richiesta: è lenta e richiede rete.
+    # Nei .p7m annidati ogni livello viene validato separatamente.
     if request.POST.get("validate") == "on":
-        context["validation"] = validate_signature(raw)
+        context["validations"] = [
+            outcome
+            for level, cms_bytes in enumerate(result.cms_layers, start=1)
+            for outcome in validate_signature(cms_bytes, level=level)
+        ]
     return render(request, "converter/result.html", context)
 
 

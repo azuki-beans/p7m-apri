@@ -30,6 +30,7 @@ class ValidationOutcome:
     trusted: bool     # il certificato risale a una CA nelle EU Trusted List
     signer: str       # CN del firmatario
     error: str = ""   # messaggio in caso di esito non determinabile
+    level: int = 1    # livello di firma (1 = più esterno) nei .p7m annidati
 
     # Dettagli (popolati solo quando available=True)
     signer_org: str = ""
@@ -126,7 +127,7 @@ async def _get_registry(client):
     return _registry
 
 
-async def _validate(p7m_bytes: bytes) -> ValidationOutcome:
+async def _validate(p7m_bytes: bytes) -> list[ValidationOutcome]:
     import aiohttp
     from asn1crypto import cms
     from pyhanko.sign.validation.generic_cms import async_validate_cms_signature
@@ -138,19 +139,20 @@ async def _validate(p7m_bytes: bytes) -> ValidationOutcome:
 
     content_info = cms.ContentInfo.load(p7m_bytes)
     if content_info["content_type"].native != "signed_data":
-        return ValidationOutcome(
+        return [ValidationOutcome(
             False, False, False, False, "",
             error="Il file non contiene una struttura CMS SignedData.",
-        )
+        )]
 
     signed_data = content_info["content"]
     # Un .p7m è enveloping: il contenuto è incapsulato nella firma.
     if signed_data["encap_content_info"]["content"] is None:
-        return ValidationOutcome(
+        return [ValidationOutcome(
             False, False, False, False, "",
             error="Firma detached: il contenuto non è incluso nel .p7m.",
-        )
+        )]
 
+    outcomes = []
     async with aiohttp.ClientSession() as client:
         registry = await _get_registry(client)
         vc = ValidationContext(
@@ -163,27 +165,47 @@ async def _validate(p7m_bytes: bytes) -> ValidationOutcome:
             # Recupera via AIA le intermedie mancanti usando la sessione aiohttp.
             fetcher_backend=AIOHttpFetcherBackend(client),
         )
-        status = await async_validate_cms_signature(
-            signed_data, validation_context=vc
-        )
+        # pyHanko valida un SignerInfo alla volta: con più firmatari paralleli
+        # sullo stesso livello costruiamo una copia del SignedData per ciascuno.
+        signer_infos = signed_data["signer_infos"]
+        for signer_info in signer_infos:
+            sd = signed_data
+            if len(signer_infos) > 1:
+                sd = signed_data.copy()
+                sd["signer_infos"] = cms.SignerInfos([signer_info])
+            try:
+                status = await async_validate_cms_signature(
+                    sd, validation_context=vc
+                )
+            except Exception as exc:
+                outcomes.append(ValidationOutcome(
+                    False, False, False, False, "",
+                    error=str(exc) or exc.__class__.__name__,
+                ))
+                continue
+            outcome = ValidationOutcome(
+                available=True,
+                intact=bool(getattr(status, "intact", False)),
+                valid=bool(getattr(status, "valid", False)),
+                trusted=bool(getattr(status, "trusted", False)),
+                signer=_part(status.signing_cert, "common_name")
+                if status.signing_cert else "",
+            )
+            _build_details(status, outcome)
+            outcomes.append(outcome)
+    return outcomes
 
-    outcome = ValidationOutcome(
-        available=True,
-        intact=bool(getattr(status, "intact", False)),
-        valid=bool(getattr(status, "valid", False)),
-        trusted=bool(getattr(status, "trusted", False)),
-        signer=_part(status.signing_cert, "common_name") if status.signing_cert else "",
-    )
-    _build_details(status, outcome)
-    return outcome
 
-
-def validate_signature(p7m_bytes: bytes) -> ValidationOutcome:
-    """Esegue la validazione eIDAS. Non solleva mai: in caso di problemi
-    restituisce un esito con ``available=False`` e il messaggio in ``error``."""
+def validate_signature(p7m_bytes: bytes, level: int = 1) -> list[ValidationOutcome]:
+    """Esegue la validazione eIDAS di un livello di firma: un esito per ogni
+    firmatario (di norma uno). Non solleva mai: in caso di problemi restituisce
+    un solo esito con ``available=False`` e il messaggio in ``error``."""
     try:
-        return asyncio.run(_validate(p7m_bytes))
+        outcomes = asyncio.run(_validate(p7m_bytes))
     except Exception as exc:  # rete assente, pyHanko non installato, file rotto…
-        return ValidationOutcome(
+        outcomes = [ValidationOutcome(
             False, False, False, False, "", error=str(exc) or exc.__class__.__name__
-        )
+        )]
+    for outcome in outcomes:
+        outcome.level = level
+    return outcomes

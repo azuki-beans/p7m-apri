@@ -9,6 +9,16 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- Supporto ai `.p7m` **annidati** (documento firmato più volte in cascata,
+  es. `documento.pdf.p7m.p7m`): l'estrazione attraversa tutti i livelli fino
+  al documento originale e riporta firmatari ed esito di integrità di ciascun
+  livello. Riconosciute anche le **firme parallele** (più firmatari sullo
+  stesso livello): prima veniva mostrato solo il primo. La verifica eIDAS
+  viene eseguita per ogni livello e per ogni firmatario.
+- `SECURE_PROXY_SSL_HEADER` nelle impostazioni: dietro un reverse proxy che
+  termina l'HTTPS (Cloud Run, nginx) gli URL assoluti, come gli esempi API
+  della pagina fatture, ora sono generati in `https://`.
+
 - File richiesti dalle Linee guida AGID per la pubblicazione come software
   open source: `publiccode.yml`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `SECURITY.md`, `AUTHORS.md`, questo diario e i modelli per issue e pull

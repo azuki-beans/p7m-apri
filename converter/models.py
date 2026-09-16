@@ -19,4 +19,7 @@ class Conversion(models.Model):
     )
     verified = models.BooleanField(default=False)
     signer = models.CharField(max_length=255, blank=True, default="")
+    # Livelli di firma, dal più esterno: [{"level": 1, "signers": [...],
+    # "verified": bool}, ...]. Più di un elemento = .p7m annidato.
+    signatures = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

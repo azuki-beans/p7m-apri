@@ -15,7 +15,7 @@ firmato digitalmente — quelli che in Italia hanno valore legale. Carichi il
 `.p7m`, l'app tira fuori il documento e verifica la firma. Tutto nel browser, in
 pochi secondi.
 
-> **Demo online:** <https://p7m-apri-42412551187.europe-west8.run.app>
+> **Demo online:** <https://p7m.azukibeans.dev>
 > — provala subito, senza installare nulla. È un'istanza dimostrativa: non
 > caricare documenti riservati e tieni presente che la prima verifica eIDAS può
 > essere lenta (l'istanza scala a zero quando inutilizzata).
@@ -39,6 +39,22 @@ sono **fittizi**, generati con un certificato di test:
 > firmato con un'identità inventata:
 > [`docs/esempio/documento-esempio.pdf.p7m`](docs/esempio/documento-esempio.pdf.p7m).
 > Caricalo nell'app per riprodurre lo screenshot qui sopra.
+
+### Firme annidate e multiple
+
+Capita che un documento già firmato venga firmato di nuovo da un altro soggetto
+(`documento.pdf.p7m.p7m`, e così via, una "cipolla" di firme): l'app spacchetta
+tutti i livelli fino al documento originale e mostra, per ciascun livello, i
+firmatari e l'esito dell'integrità. Il livello 1 è il più esterno, cioè la firma
+apposta per ultima. Sono riconosciute anche le **firme parallele** (più
+firmatari sullo stesso livello) e, con la verifica eIDAS attiva, ogni livello e
+ogni firmatario vengono validati separatamente.
+
+![Risultato con firma annidata a due livelli](docs/esempio/p7m_annidato.png)
+
+> Per provare: [`docs/esempio/documento-esempio.pdf.p7m.p7m`](docs/esempio/documento-esempio.pdf.p7m.p7m)
+> è il file di esempio qui sopra firmato una seconda volta da un'altra identità
+> inventata.
 
 ## Visualizzare le fatture elettroniche (XML → PDF)
 
@@ -193,6 +209,8 @@ openssl smime -verify -in documento.pdf.p7m -inform DER -noverify -out documento
 - Il nome dell'output mantiene l'estensione interna: `documento.pdf.p7m` →
   `documento.pdf`. Se il `.p7m` non la conteneva (`documento.p7m`), l'output sarà
   `documento` e dovrai aggiungere l'estensione a mano.
+- Per un `.p7m` annidato (`documento.pdf.p7m.p7m`) il comando va ripetuto una
+  volta per livello: l'output del primo passaggio è a sua volta un `.p7m`.
 
 ## Contribuire
 

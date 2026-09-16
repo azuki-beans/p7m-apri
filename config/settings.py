@@ -14,6 +14,16 @@ CSRF_TRUSTED_ORIGINS = [
     o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o
 ]
 
+# Dietro un reverse proxy che termina l'HTTPS (Cloud Run, nginx, Cloudflare)
+# Django riceve HTTP: senza questo header request.is_secure() è False e gli
+# URL assoluti (es. gli esempi API in /fatture/) verrebbero costruiti in http://.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Dietro un reverse proxy che termina l'HTTPS (Cloud Run, nginx, Cloudflare)
+# Django riceve HTTP: senza questo header request.is_secure() è False e gli
+# URL assoluti (es. quelli degli esempi API in /fatture/) escono in http://.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 INSTALLED_APPS = [
     "converter",
     "fatture",

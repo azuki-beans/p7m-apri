@@ -12,3 +12,5 @@ invoice_samples/
 # Segreti locali e stack di test (non committati).
 .env
 stacks/
+# Cache locale delle EU Trusted List (validazione eIDAS)
+trust-lists/

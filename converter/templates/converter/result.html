@@ -12,12 +12,37 @@
         <strong>✓ Documento estratto</strong>
         <span style="color:#854d0e;">— integrità firma non confermata.</span>
     {% endif %}
-    {% if conversion.signer %}
+    {% if conversion.signatures|length > 1 %}
         <div style="margin-top:.5rem;font-size:.9rem;">
-            Firmatario: <strong>{{ conversion.signer }}</strong>
+            Firma annidata: <strong>{{ conversion.signatures|length }} livelli</strong>
+            (il livello 1 è il più esterno, apposto per ultimo).
+            <ol style="margin:.3rem 0 0;padding-left:1.3rem;">
+                {% for s in conversion.signatures %}
+                <li>
+                    <strong>{{ s.signers|join:", "|default:"firmatario sconosciuto" }}</strong>
+                    {% if s.verified %}
+                        <span style="font-size:.8rem;">✓ integrità ok</span>
+                    {% else %}
+                        <span style="font-size:.8rem;color:#854d0e;">⚠ integrità non confermata</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+    {% elif conversion.signer %}
+        <div style="margin-top:.5rem;font-size:.9rem;">
+            {% if conversion.signatures.0.signers|length > 1 %}Firmatari{% else %}Firmatario{% endif %}:
+            <strong>{{ conversion.signer }}</strong>
         </div>
     {% endif %}
-    {% if validation %}
+    {% if validations %}
+      {% for validation in validations %}
+        {% if validations|length > 1 %}
+            <div style="margin-top:.8rem;font-size:.8rem;color:#6b7280;
+                        border-top:1px solid #bbf7d0;padding-top:.5rem;">
+                Livello {{ validation.level }}{% if validation.signer %} — {{ validation.signer }}{% endif %}
+            </div>
+        {% endif %}
         {% if not validation.available %}
             <div style="margin-top:.6rem;font-size:.85rem;color:#854d0e;">
                 Validità legale non determinabile: {{ validation.error }}
@@ -85,6 +110,7 @@
             {% endif %}
         </details>
         {% endif %}
+      {% endfor %}
     {% else %}
     <div style="margin-top:.4rem;font-size:.8rem;color:#3f6212;">
         Nota: la catena dei certificati CA non viene validata.
