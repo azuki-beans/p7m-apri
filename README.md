@@ -43,7 +43,7 @@ sono **fittizi**, generati con un certificato di test:
 ### Firme annidate e multiple
 
 Capita che un documento già firmato venga firmato di nuovo da un altro soggetto
-(`documento.pdf.p7m.p7m`, e così via, una "cipolla" di firme): l'app spacchetta
+(`documento.pdf.p7m.p7m`, e così via, una "matrioska" di firme): l'app spacchetta
 tutti i livelli fino al documento originale e mostra, per ciascun livello, i
 firmatari e l'esito dell'integrità. Il livello 1 è il più esterno, cioè la firma
 apposta per ultima. Sono riconosciute anche le **firme parallele** (più
