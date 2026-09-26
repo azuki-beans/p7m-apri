@@ -3,118 +3,111 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/azuki-beans/p7m-apri/tags"><img src="https://img.shields.io/github/v/tag/azuki-beans/p7m-apri?sort=semver&label=versione&color=8A2230" alt="Ultima versione"></a>
-  <a href="https://github.com/azuki-beans/p7m-apri/pkgs/container/p7m-apri"><img src="https://img.shields.io/badge/ghcr.io-p7m--apri-2496ED?logo=docker&logoColor=white" alt="Immagine Docker su ghcr.io"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licenza-MIT-informational" alt="Licenza MIT"></a>
+  <a href="https://github.com/azuki-beans/p7m-apri/tags"><img src="https://img.shields.io/github/v/tag/azuki-beans/p7m-apri?sort=semver&label=version&color=8A2230" alt="Latest version"></a>
+  <a href="https://github.com/azuki-beans/p7m-apri/pkgs/container/p7m-apri"><img src="https://img.shields.io/badge/ghcr.io-p7m--apri-2496ED?logo=docker&logoColor=white" alt="Docker image on ghcr.io"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-informational" alt="MIT License"></a>
 </p>
 
 # p7m-apri
 
-Estrai il documento originale (di solito un PDF) da un file `.p7m`, cioè un file
-firmato digitalmente — quelli che in Italia hanno valore legale. Carichi il
-`.p7m`, l'app tira fuori il documento e verifica la firma. Tutto nel browser, in
-pochi secondi.
+Extract the original document (usually a PDF) from a `.p7m` file, the CAdES digitally signed
+format that has legal value in Italy. Upload the `.p7m`, the app pulls out the document and
+verifies the signature. All in the browser, in a few seconds.
 
-> **Demo online:** <https://p7m.azukibeans.dev>
-> — provala subito, senza installare nulla. È un'istanza dimostrativa: non
-> caricare documenti riservati e tieni presente che la prima verifica eIDAS può
-> essere lenta (l'istanza scala a zero quando inutilizzata).
+> **Live demo:** <https://p7m.azukibeans.dev>
+> Try it right away, nothing to install. It is a demo instance: do not upload confidential
+> documents, and keep in mind that the first eIDAS check can be slow (the instance scales to zero
+> when idle).
 
-> Nessun file viene conservato: i documenti estratti sono cancellati automaticamente dopo un'ora.
+> No file is kept: extracted documents are deleted automatically after one hour.
 
-Spuntando l'opzione **«Verifica anche la validità legale della firma (eIDAS)»**
-l'app non si limita a controllare l'integrità, ma verifica che il certificato
-del firmatario sia riconosciuto dalle EU Trusted List (i prestatori qualificati,
-inclusi quelli italiani accreditati AgID). Questa verifica è più lenta e
-richiede connessione a Internet.
+The user interface is in Italian.
 
-![Schermata iniziale di p7m-apri](docs/screenshot.png)
+By ticking **"Verifica anche la validità legale della firma (eIDAS)"** (also verify the legal
+validity of the signature) the app does not stop at integrity: it checks that the signer's
+certificate is recognised by the EU Trusted Lists (qualified trust service providers, including
+the Italian ones accredited by AgID). This check is slower and needs an Internet connection.
 
-Ecco il risultato di una verifica andata a buon fine — i dati del firmatario
-sono **fittizi**, generati con un certificato di test:
+![p7m-apri home page](docs/screenshot.png)
 
-![Risultato di una verifica riuscita](docs/esempio/p7m_done.png)
+Here is the result of a successful verification. The signer's data is **fictitious**, generated
+with a test certificate:
 
-> Vuoi provare senza usare un tuo documento? Nel repo c'è un file di esempio già
-> firmato con un'identità inventata:
+![Result of a successful verification](docs/esempio/p7m_done.png)
+
+> Want to try without using one of your documents? The repository contains a sample file signed
+> with a made-up identity:
 > [`docs/esempio/documento-esempio.pdf.p7m`](docs/esempio/documento-esempio.pdf.p7m).
-> Caricalo nell'app per riprodurre lo screenshot qui sopra.
+> Upload it to the app to reproduce the screenshot above.
 
-### Firme annidate e multiple
+### Nested and multiple signatures
 
-Capita che un documento già firmato venga firmato di nuovo da un altro soggetto
-(`documento.pdf.p7m.p7m`, e così via, una "matrioska" di firme): l'app spacchetta
-tutti i livelli fino al documento originale e mostra, per ciascun livello, i
-firmatari e l'esito dell'integrità. Il livello 1 è il più esterno, cioè la firma
-apposta per ultima. Sono riconosciute anche le **firme parallele** (più
-firmatari sullo stesso livello) e, con la verifica eIDAS attiva, ogni livello e
-ogni firmatario vengono validati separatamente.
+Sometimes an already signed document is signed again by someone else (`documento.pdf.p7m.p7m` and
+so on, a "matryoshka" of signatures): the app unpacks every level down to the original document
+and shows, for each level, the signers and the integrity result. Level 1 is the outermost, i.e.
+the last signature applied. **Parallel signatures** (several signers on the same level) are
+recognised too, and with the eIDAS check enabled every level and every signer is validated
+separately.
 
-![Risultato con firma annidata a due livelli](docs/esempio/p7m_annidato.png)
+![Result with a two-level nested signature](docs/esempio/p7m_annidato.png)
 
-> Per provare: [`docs/esempio/documento-esempio.pdf.p7m.p7m`](docs/esempio/documento-esempio.pdf.p7m.p7m)
-> è il file di esempio qui sopra firmato una seconda volta da un'altra identità
-> inventata.
+> To try it: [`docs/esempio/documento-esempio.pdf.p7m.p7m`](docs/esempio/documento-esempio.pdf.p7m.p7m)
+> is the sample file above signed a second time by another made-up identity.
 
-## Visualizzare le fatture elettroniche (XML → PDF)
+## Viewing electronic invoices (XML → PDF)
 
-La stessa app include un **visualizzatore di fatture elettroniche**: carichi una
-fattura **FatturaPA** in formato `.xml` (o `.p7m` firmato) e la vedi impaginata
-come apparirebbe **su carta**, pronta da scaricare in PDF. La trovi su
-**`/fatture/`** o dal link in home.
+The same app includes an **Italian electronic invoice viewer**: upload a **FatturaPA** invoice as
+`.xml` (or a signed `.p7m`) and see it laid out as it would look **on paper**, ready to download as
+PDF. It lives at **`/fatture/`** or via the link on the home page. Parsing is done by
+[fatturapa](https://github.com/azuki-beans/fatturapa).
 
 <p align="center">
-  <img src="docs/fatture-home.png" alt="Pagina di caricamento della fattura" width="430">
+  <img src="docs/fatture-home.png" alt="Invoice upload page" width="430">
   &nbsp;
-  <img src="docs/fattura-pdf.png" alt="Fattura FatturaPA impaginata in PDF" width="330">
+  <img src="docs/fattura-pdf.png" alt="FatturaPA invoice rendered as PDF" width="330">
 </p>
 
-> **Provalo:** nel repo ci sono alcune fatture di esempio (i tracciati ufficiali
-> dell'Agenzia delle Entrate) in [`test_samples/`](test_samples/) — caricane una
-> `.xml` per riprodurre lo screenshot qui sopra.
+> **Try it:** the repository contains some sample invoices (the official samples from the Italian
+> Revenue Agency) in [`test_samples/`](test_samples/). Upload an `.xml` one to reproduce the
+> screenshot above.
 
-### Da un `.p7m` alla sua fattura
+### From a `.p7m` to its invoice
 
-Le fatture arrivano spesso firmate come `.p7m`. Se apri un `.p7m` dalla home e il
-contenuto è una fattura, l'app se ne accorge e ti propone di **visualizzarla in
-PDF** con un clic, senza estrazione manuale (in alternativa puoi caricare il
-`.p7m` direttamente su `/fatture/`). Nel repo c'è un esempio già firmato con
-un'identità inventata:
+Invoices often arrive signed as `.p7m`. If you open a `.p7m` from the home page and its content is
+an invoice, the app notices and offers to **view it as PDF** in one click, with no manual
+extraction (alternatively, upload the `.p7m` directly at `/fatture/`). The repository contains a
+sample signed with a made-up identity:
 [`test_samples/fattura-firmata-esempio.xml.p7m`](test_samples/fattura-firmata-esempio.xml.p7m).
 
 <p align="center">
-  <img src="docs/fatture-da-p7m.png" alt="Bottone per visualizzare come PDF la fattura estratta da un .p7m" width="430">
+  <img src="docs/fatture-da-p7m.png" alt="Button to view the invoice extracted from a .p7m as PDF" width="430">
 </p>
 
-### Personalizzare l'aspetto
+### Customising the look
 
-Il PDF si adatta al brand aziendale tramite due variabili d'ambiente:
-`FATTURA_ACCENT` (colore principale in HEX) e `FATTURA_LOGO_URL` (URL del logo
-mostrato in intestazione). Vedi la tabella più sotto.
+The PDF adapts to your company brand through two environment variables: `FATTURA_ACCENT` (main
+colour in HEX) and `FATTURA_LOGO_URL` (URL of the logo shown in the header). See the table below.
 
-### Usarlo come API
+### Using it as an API
 
-Lo stesso servizio è disponibile via HTTP: invia una fattura `.xml` o `.p7m` in
-`POST` e ricevi il PDF.
+The same service is available over HTTP: `POST` an `.xml` or `.p7m` invoice and get the PDF back.
 
 ```bash
-# file multipart
+# multipart file
 curl -F file=@fattura.xml http://localhost:8000/fatture/api/pdf/ -o fattura.pdf
 
-# byte grezzi nel corpo, con colore del tema personalizzato (%23 = '#')
+# raw bytes in the body, with a custom theme colour (%23 = '#')
 curl --data-binary @fattura.xml.p7m \
      "http://localhost:8000/fatture/api/pdf/?accent=%231D4ED8" -o fattura.pdf
 ```
 
-Parametri query opzionali: `accent` (HEX del tema), `dl=1` per forzare il
-download, `filename` per il corpo grezzo. In caso di errore la risposta è JSON
-`{"error": …}`.
+Optional query parameters: `accent` (theme HEX), `dl=1` to force download, `filename` for a raw
+body. On error the response is JSON `{"error": …}`.
 
-## Avvio rapido (in locale)
+## Quick start (local)
 
-Serve solo [Docker](https://docs.docker.com/get-docker/) **oppure**
-[Podman](https://podman.io/). Non devi installare né scaricare altro: l'immagine
-è già pronta su GitHub.
+All you need is [Docker](https://docs.docker.com/get-docker/) **or**
+[Podman](https://podman.io/). Nothing else to install or download: the image is ready on GitHub.
 
 ```bash
 # Docker
@@ -124,53 +117,53 @@ docker run --rm -p 8000:8000 -v p7m-apri-data:/data ghcr.io/azuki-beans/p7m-apri
 podman run --rm -p 8000:8000 -v p7m-apri-data:/data ghcr.io/azuki-beans/p7m-apri:latest
 ```
 
-Poi apri il browser su **<http://localhost:8000>** e carica il tuo `.p7m`.
+Then open **<http://localhost:8000>** and upload your `.p7m`.
 
-## Metterlo su un server (Docker Compose)
+## Running it on a server (Docker Compose)
 
 ```bash
 git clone https://github.com/azuki-beans/p7m-apri.git
 cd p7m-apri
 
-cp .env.example .env       # imposta almeno DJANGO_SECRET_KEY
-docker compose up -d       # con Podman: podman compose up -d
+cp .env.example .env       # set at least DJANGO_SECRET_KEY
+docker compose up -d       # with Podman: podman compose up -d
 ```
 
-Il servizio si riavvia da solo (`restart: unless-stopped`) e conserva il proprio
-database nel volume `p7m-apri-data`. Per aggiornarlo all'ultima versione:
+The service restarts on its own (`restart: unless-stopped`) and keeps its database in the
+`p7m-apri-data` volume. To update to the latest version:
 `docker compose pull && docker compose up -d`.
 
-### Variabili d'ambiente
+### Environment variables
 
-| Variabile | A cosa serve |
+| Variable | Purpose |
 |---|---|
-| `DJANGO_SECRET_KEY` | Chiave segreta (obbligatoria in produzione). |
-| `DJANGO_ALLOWED_HOSTS` | Domini consentiti, es. `p7m.azienda.it`. |
-| `CSRF_TRUSTED_ORIGINS` | Origini fidate con schema, es. `https://p7m.azienda.it`. |
+| `DJANGO_SECRET_KEY` | Secret key (required in production). |
+| `DJANGO_ALLOWED_HOSTS` | Allowed hostnames, e.g. `p7m.example.com`. |
+| `CSRF_TRUSTED_ORIGINS` | Trusted origins with scheme, e.g. `https://p7m.example.com`. |
 | `DJANGO_DEBUG` | `1`/`0` (default `0`). |
-| `DJANGO_DB_PATH` | Percorso del database SQLite. |
-| `TRUST_LIST_CACHE_DIR` | Cache delle EU Trusted List per la validazione eIDAS. |
-| `TRUST_LIST_TERRITORIES` | Paesi delle Trusted List, es. `IT` (default) o `IT,FR`; vuoto = tutta la UE. |
-| `SIGNATURE_REVOCATION_MODE` | Controllo revoca: `soft-fail` (default), `hard-fail`, `require`. |
-| `SIGNATURE_TIME_TOLERANCE` | Tolleranza in secondi sui tempi OCSP/CRL (default `60`); alza il valore se l'orologio del server è impreciso. |
-| `FATTURA_ACCENT` | Colore principale del PDF fattura in HEX (default `#8A2230`). |
-| `FATTURA_LOGO_URL` | URL assoluto del logo aziendale mostrato in intestazione fattura. |
-| `PORT` | Porta su cui ascoltare (default `8000`); Cloud Run e simili la impostano da soli. |
-| `UMAMI_SRC` | URL dello script Umami (es. `https://cloud.umami.is/script.js`); vuoto = nessun analytics. |
-| `UMAMI_WEBSITE_ID` | ID del sito su Umami; va valorizzato insieme a `UMAMI_SRC`. |
+| `DJANGO_DB_PATH` | Path of the SQLite database. |
+| `TRUST_LIST_CACHE_DIR` | Cache of the EU Trusted Lists for eIDAS validation. |
+| `TRUST_LIST_TERRITORIES` | Trusted List countries, e.g. `IT` (default) or `IT,FR`; empty = the whole EU. |
+| `SIGNATURE_REVOCATION_MODE` | Revocation check: `soft-fail` (default), `hard-fail`, `require`. |
+| `SIGNATURE_TIME_TOLERANCE` | Tolerance in seconds on OCSP/CRL times (default `60`); raise it if the server clock is inaccurate. |
+| `FATTURA_ACCENT` | Main colour of the invoice PDF in HEX (default `#8A2230`). |
+| `FATTURA_LOGO_URL` | Absolute URL of the company logo shown in the invoice header. |
+| `PORT` | Port to listen on (default `8000`); Cloud Run and similar platforms set it themselves. |
+| `UMAMI_SRC` | Umami script URL (e.g. `https://cloud.umami.is/script.js`); empty = no analytics. |
+| `UMAMI_WEBSITE_ID` | Umami website ID; set it together with `UMAMI_SRC`. |
 
-## Deploy gratuito su Google Cloud Run
+## Free deploy on Google Cloud Run
 
-Cloud Run esegue il container senza volumi e scala a zero quando nessuno lo usa
-(rientra nel free tier). Bastano l'[SDK gcloud](https://cloud.google.com/sdk/docs/install)
-e un progetto GCP, poi `gcloud run deploy p7m-apri --source .`.
+Cloud Run runs the container without volumes and scales to zero when nobody is using it (it fits
+in the free tier). All you need is the [gcloud SDK](https://cloud.google.com/sdk/docs/install) and
+a GCP project, then `gcloud run deploy p7m-apri --source .`.
 
-👉 **Guida passo-passo:** [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) —
-primo deploy, dominio/CSRF e chiave segreta con Secret Manager.
+👉 **Step-by-step guide:** [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md): first deploy,
+domain/CSRF and secret key with Secret Manager.
 
-## Compilare l'immagine da sorgente
+## Building the image from source
 
-Se vuoi buildare tu invece di usare quella pubblica:
+If you prefer to build it yourself instead of using the public one:
 
 ```bash
 git clone https://github.com/azuki-beans/p7m-apri.git
@@ -179,66 +172,60 @@ docker build -t p7m-apri .
 docker run --rm -p 8000:8000 -v p7m-apri-data:/data p7m-apri
 ```
 
-## Rilasci (versioni)
+## Releases
 
-La versione mostrata dal badge in cima è l'ultimo **tag Git** `vX.Y.Z`. La
-pubblicazione di un tag è anche ciò che **avvia la build**: il workflow GitHub
-Actions builda l'immagine multi-arch e la pubblica su `ghcr.io` taggata con la
-versione (`vX.Y.Z`, `X.Y.Z`) e `latest`.
+The version shown by the badge at the top is the latest **Git tag** `vX.Y.Z`. Pushing a tag is
+also what **starts the build**: the GitHub Actions workflow builds the multi-arch image and
+publishes it on `ghcr.io` tagged with the version (`vX.Y.Z`, `X.Y.Z`) and `latest`.
 
-Per rilasciare una nuova versione:
+To release a new version:
 
 ```bash
-# allinea la versione nel pyproject.toml, poi crea e pubblica il tag
+# align the version in pyproject.toml, then create and push the tag
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-## Come funziona (sotto il cofano)
+## How it works (under the hood)
 
-Dietro le quinte è una sola chiamata a OpenSSL:
+Behind the scenes it is a single OpenSSL call:
 
 ```bash
 openssl smime -verify -in documento.pdf.p7m -inform DER -noverify -out documento.pdf
 ```
 
-- `-inform DER` — i `.p7m` sono codificati in DER.
-- `-noverify` — salta la validazione della catena di certificati CA (così non
-  servono i certificati root installati), ma l'integrità della firma viene
-  comunque verificata.
-- Il nome dell'output mantiene l'estensione interna: `documento.pdf.p7m` →
-  `documento.pdf`. Se il `.p7m` non la conteneva (`documento.p7m`), l'output sarà
-  `documento` e dovrai aggiungere l'estensione a mano.
-- Per un `.p7m` annidato (`documento.pdf.p7m.p7m`) il comando va ripetuto una
-  volta per livello: l'output del primo passaggio è a sua volta un `.p7m`.
+- `-inform DER`: `.p7m` files are DER-encoded.
+- `-noverify`: skips CA chain validation (so no root certificates need to be installed), but
+  signature integrity is still verified.
+- The output name keeps the inner extension: `documento.pdf.p7m` → `documento.pdf`. If the `.p7m`
+  did not include it (`documento.p7m`), the output will be `documento` and you will have to add
+  the extension by hand.
+- For a nested `.p7m` (`documento.pdf.p7m.p7m`) the command must be repeated once per level: the
+  output of the first pass is itself a `.p7m`.
 
-## Contribuire
+## Contributing
 
-Segnalazioni, proposte e pull request sono benvenute. Come partecipare,
-convenzioni di codice e tempi di risposta sono in
-[CONTRIBUTING.md](CONTRIBUTING.md); partecipando accetti il [codice di
-condotta](CODE_OF_CONDUCT.md).
+Bug reports, ideas and pull requests are welcome. How to take part, code conventions and response
+times are in [CONTRIBUTING.md](CONTRIBUTING.md); by participating you agree to the
+[code of conduct](CODE_OF_CONDUCT.md).
 
-Per le **vulnerabilità di sicurezza non aprire una issue pubblica**: segui la
-procedura riservata in [SECURITY.md](SECURITY.md).
+For **security vulnerabilities, do not open a public issue**: follow the private procedure in
+[SECURITY.md](SECURITY.md).
 
-Le modifiche di ogni versione sono annotate in [CHANGELOG.md](CHANGELOG.md).
+Changes in each version are listed in [CHANGELOG.md](CHANGELOG.md).
 
-## Software open source per la Pubblica Amministrazione
+## Open source software for the Italian public administration
 
-Il progetto è pubblicato secondo le [Linee guida su acquisizione e riuso di
-software per le pubbliche
-amministrazioni](https://docs.italia.it/italia/developers-italia/lg-acquisizione-e-riuso-software-per-pa-docs/)
-di AGID. I metadati sono descritti in
-[`publiccode.yml`](publiccode.yml) secondo lo [standard
-publiccode.yml](https://yml.publiccode.tools/), il formato usato dal catalogo
-[Developers Italia](https://developers.italia.it/).
+The project is published according to AGID's
+[guidelines on acquisition and reuse of software for public administrations](https://docs.italia.it/italia/developers-italia/lg-acquisizione-e-riuso-software-per-pa-docs/).
+Its metadata is described in [`publiccode.yml`](publiccode.yml) following the
+[publiccode.yml standard](https://yml.publiccode.tools/), the format used by the
+[Developers Italia](https://developers.italia.it/) catalogue.
 
-Una pubblica amministrazione può quindi **riusare liberamente** questo
-software: la licenza MIT ne consente uso, modifica e ridistribuzione senza
-autorizzazioni preventive né costi di licenza. L'applicazione si installa come
-singola immagine container e non richiede componenti proprietari.
+Any public administration can therefore **freely reuse** this software: the MIT license allows
+use, modification and redistribution with no prior authorisation and no licence fees. The
+application installs as a single container image and needs no proprietary components.
 
-## Licenza
+## License
 
-Distribuito con licenza [MIT](LICENSE). © azuki-beans.
+Released under the [MIT](LICENSE) license. © azuki-beans.
