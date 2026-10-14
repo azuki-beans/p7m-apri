@@ -58,6 +58,7 @@ def index(request):
         "umami_src": settings.UMAMI_SRC,
         "umami_website_id": settings.UMAMI_WEBSITE_ID,
         "api_url": request.build_absolute_uri(reverse("api_fattura_pdf")),
+        "canonical": request.build_absolute_uri(reverse("fatture")),
     })
 
 

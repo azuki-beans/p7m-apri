@@ -18,6 +18,15 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 - `SECURE_PROXY_SSL_HEADER` nelle impostazioni: dietro un reverse proxy che
   termina l'HTTPS (Cloud Run, nginx) gli URL assoluti, come gli esempi API
   della pagina fatture, ora sono generati in `https://`.
+- SEO: `robots.txt` e `sitemap.xml` generati dinamicamente sul dominio del
+  deploy; pagina fatture con canonical, Open Graph, nuove domande frequenti
+  e dati strutturati `FAQPage`; nuove FAQ in home (`.p7m` da PEC, `.p7m.p7m`).
+
+### Modificato
+
+- Il canonical della home è ora calcolato dalla richiesta, non più fisso.
+- Testi e meta description non dicono più che l'elaborazione avviene "dal
+  browser": il file viene caricato ed elaborato sul server.
 
 - File richiesti dalle Linee guida AGID per la pubblicazione come software
   open source: `publiccode.yml`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,

@@ -80,3 +80,9 @@ poetry run python manage.py migrate && poetry run python manage.py runserver
 Dependencies live in `pyproject.toml` + `poetry.lock` (single source of truth: the Dockerfile installs with Poetry too, `POETRY_VIRTUALENVS_CREATE=false`). There is no `requirements.txt`.
 
 There are no lint or automated test commands. To smoke-test extraction without a real `.p7m`, generate one with a self-signed cert: `openssl req -x509 -newkey rsa:2048 -keyout k.pem -out c.pem -days 1 -nodes -subj "/CN=TEST"` then `openssl smime -sign -binary -in <file> -signer c.pem -inkey k.pem -outform DER -nodetach -out <file>.p7m`.
+
+## Release & deploy
+
+`.github/workflows/deploy.yml`, **only on `v*` tags** (`git tag v1.2.3 && git push origin v1.2.3`):
+1. `build` — multi-arch (amd64+arm64, intentional: public open-source image) push to `ghcr.io/azuki-beans/p7m-apri` (`vX.Y.Z`, `X.Y.Z`, `latest`, `sha`).
+2. `deploy` — runs in the GitHub `production` environment (**manual approval**), authenticates with Workload Identity Federation (no JSON keys; repo variables `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`, `GCP_DEPLOY_SA`), then `gcloud run deploy p7m-apri --image europe-west1-docker.pkg.dev/<project>/ghcr/azuki-beans/p7m-apri:<tag>` — Cloud Run can't pull from ghcr.io, so it goes through the Artifact Registry **remote** repo `ghcr` (proxy of ghcr.io). Only the image changes; env/secrets are set once on GCP. Skipped when `GCP_WIF_PROVIDER` is unset (forks). Setup steps in `docs/deploy-cloud-run.md`.

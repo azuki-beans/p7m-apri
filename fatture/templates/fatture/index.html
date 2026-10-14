@@ -3,9 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Visualizzatore fatture elettroniche XML — anteprima e PDF | p7m-apri</title>
-    <meta name="description" content="Carica una fattura elettronica in formato XML (FatturaPA) e visualizzala come apparirebbe su carta, con anteprima PDF e download. Gratis, dal browser, senza installare nulla.">
+    <title>Visualizzare fattura elettronica XML online — Converti in PDF | p7m-apri</title>
+    <meta name="description" content="Apri e leggi una fattura elettronica XML o .xml.p7m (FatturaPA) e convertila in PDF stampabile: anteprima immediata e download. Gratis, senza installare nulla, open source.">
+    <link rel="canonical" href="{{ canonical }}">
     <meta name="robots" content="index, follow">
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="p7m-apri">
+    <meta property="og:title" content="Visualizzare fattura elettronica XML online — Converti in PDF">
+    <meta property="og:description" content="Carica una fattura elettronica XML o .p7m e ottieni il PDF impaginato come su carta. Gratis e senza installare nulla.">
+    <meta property="og:url" content="{{ canonical }}">
+    <meta property="og:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/fattura-pdf.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Visualizzare fattura elettronica XML online — Converti in PDF">
+    <meta name="twitter:description" content="Carica una fattura elettronica XML o .p7m e ottieni il PDF impaginato come su carta. Gratis e senza installare nulla.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/fattura-pdf.png">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImF6dWtpLWJlYW5zIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmVhbiIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNDMjQ5NUEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN0ExRjJCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iI0Y1RUFENyIvPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzMiAzMikiPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzIiIHJ4PSIxNyIgcnk9IjIzIiBmaWxsPSJ1cmwoI2JlYW4pIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjUiIGN5PSIyMiIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjE4Ii8+CiAgICA8cmVjdCB4PSIyOSIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjQwIiByeD0iMyIgZmlsbD0iI0Y1RUFENyIvPgogIDwvZz4KPC9zdmc+Cg==">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     {% if umami_src and umami_website_id %}
@@ -122,9 +135,68 @@ curl --data-binary @fattura.xml.p7m \
         <h3>I miei file vengono conservati?</h3>
         <p>No. La fattura viene elaborata in memoria e il PDF risultante è
         tenuto solo per il download, poi cancellato automaticamente dopo un'ora.</p>
+        <h3>Come apro una fattura elettronica XML?</h3>
+        <p>Il file <code>.xml</code> scaricato dal Cassetto fiscale, dalla PEC o
+        dal gestionale non è fatto per essere letto a occhio. Caricalo qui
+        sopra e premi <em>Genera anteprima PDF</em>: vedrai la fattura
+        impaginata come un documento cartaceo, da leggere, stampare o salvare.</p>
+        <h3>Posso aprire una fattura .xml.p7m?</h3>
+        <p>Sì. Le fatture firmate digitalmente hanno estensione
+        <code>.xml.p7m</code>: caricale così come sono, la firma viene rimossa
+        e l'XML interno impaginato in automatico, senza passaggi manuali.</p>
+        <h3>Funziona con fatture tra privati e verso la PA?</h3>
+        <p>Sì: sono supportati entrambi i formati del tracciato FatturaPA 1.2,
+        <strong>FPR12</strong> (tra privati, B2B/B2C) e <strong>FPA12</strong>
+        (verso la Pubblica Amministrazione), anche con più fatture nello
+        stesso file (lotto).</p>
         <h3>Il PDF ha valore fiscale?</h3>
         <p>No: è una <strong>rappresentazione grafica</strong> di cortesia. Il
         documento con valore legale resta l'XML firmato originale.</p>
+        <h3>È gratis?</h3>
+        <p>Sì, gratuito e <a href="https://github.com/azuki-beans/p7m-apri">open
+        source</a>: puoi anche installarlo sul tuo server con Docker o usarlo
+        tramite l'API qui sopra.</p>
     </article>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Come apro una fattura elettronica XML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Carica il file .xml della fattura su p7m-apri e premi Genera anteprima PDF: la fattura viene impaginata come un documento cartaceo, da leggere, stampare o scaricare in PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso aprire una fattura .xml.p7m?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sì. La fattura firmata digitalmente (.xml.p7m) si carica così com'è: la firma viene rimossa e l'XML interno impaginato in PDF automaticamente."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Funziona con fatture tra privati e verso la Pubblica Amministrazione?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sì, sono supportati i formati FatturaPA 1.2 FPR12 (tra privati) e FPA12 (verso la PA), anche con più fatture nello stesso file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Il PDF della fattura ha valore fiscale?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, è una rappresentazione grafica di cortesia. Il documento con valore legale resta l'XML originale."
+          }
+        }
+      ]
+    }
+    </script>
 </body>
 </html>

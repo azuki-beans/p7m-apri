@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google-site-verification" content="lWUL7Z7cqMHsLBML8fO3j88O62KtWkHz4s4OXHTc9uI">
     <title>Aprire file .p7m online — Estrai il PDF | p7m-apri</title>
-    <meta name="description" content="Apri i file .p7m e estrai il documento originale (di solito un PDF) direttamente dal browser, gratis e senza installare nulla. I file non vengono conservati.">
-    <link rel="canonical" href="https://p7m.azukibeans.dev/">
+    <meta name="description" content="Apri online i file .p7m (anche ricevuti via PEC) ed estrai il documento originale, di solito un PDF: gratis, senza installare nulla, open source. I file non vengono conservati.">
+    <link rel="canonical" href="{{ canonical }}">
     <meta name="robots" content="index, follow">
     <!-- Open Graph / social -->
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:site_name" content="p7m-apri">
     <meta property="og:title" content="Aprire file .p7m online — Estrai il PDF">
-    <meta property="og:description" content="Estrai il documento originale da un file .p7m firmato digitalmente, dal browser, gratis e senza installare nulla.">
-    <meta property="og:url" content="https://p7m.azukibeans.dev/">
+    <meta property="og:description" content="Estrai online il documento originale da un file .p7m firmato digitalmente, gratis e senza installare nulla.">
+    <meta property="og:url" content="{{ canonical }}">
     <meta property="og:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/screenshot.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Aprire file .p7m online — Estrai il PDF">
-    <meta name="twitter:description" content="Estrai il documento originale da un file .p7m firmato digitalmente, dal browser, gratis e senza installare nulla.">
+    <meta name="twitter:description" content="Estrai online il documento originale da un file .p7m firmato digitalmente, gratis e senza installare nulla.">
     <meta name="twitter:image" content="https://raw.githubusercontent.com/azuki-beans/p7m-apri/main/docs/screenshot.png">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImF6dWtpLWJlYW5zIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmVhbiIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNDMjQ5NUEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN0ExRjJCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iI0Y1RUFENyIvPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzMiAzMikiPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzIiIHJ4PSIxNyIgcnk9IjIzIiBmaWxsPSJ1cmwoI2JlYW4pIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjUiIGN5PSIyMiIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjE4Ii8+CiAgICA8cmVjdCB4PSIyOSIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjQwIiByeD0iMyIgZmlsbD0iI0Y1RUFENyIvPgogIDwvZz4KPC9zdmc+Cg==">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -155,7 +155,7 @@
         <p>Per leggerlo devi <strong>estrarre il documento originale</strong>.
         Con <strong>p7m-apri</strong> ti basta caricare il file qui sopra: in
         pochi secondi ottieni il PDF (o il file originale) pronto da scaricare,
-        direttamente dal browser e senza installare alcun programma.</p>
+        senza installare alcun programma.</p>
 
         <h2>Domande frequenti</h2>
 
@@ -177,6 +177,19 @@
         <strong>EU Trusted List</strong> (i prestatori di servizi fiduciari
         qualificati, inclusi quelli italiani accreditati AgID). Così sai non
         solo che la firma è intatta, ma che è <em>affidabile</em>.</p>
+
+        <h3>Ho ricevuto un .p7m via PEC: come lo apro?</h3>
+        <p>Scarica l'allegato <code>.p7m</code> dalla PEC e caricalo qui sopra.
+        Il documento firmato (atto, contratto, comunicazione) viene estratto e
+        puoi aprirlo con un normale lettore PDF. Se si tratta di una fattura
+        elettronica, l'app te lo segnala e puoi
+        <a href="{% url 'fatture' %}">visualizzarla come PDF</a>.</p>
+
+        <h3>Il mio file si chiama .p7m.p7m: è doppia firma?</h3>
+        <p>Sì: è un documento firmato e poi firmato di nuovo (per esempio da
+        due persone in momenti diversi). p7m-apri “sbuccia” tutti i livelli
+        in automatico e ti mostra chi ha firmato ciascuno. Vengono riconosciute
+        anche le <strong>firme multiple parallele</strong> sullo stesso livello.</p>
 
         <h3>Perché a volte il file estratto non ha estensione?</h3>
         <p>Il nome dell'output mantiene quello interno al <code>.p7m</code>:
@@ -201,7 +214,7 @@
           "name": "Come apro un file .p7m senza installare programmi?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Carica il file .p7m su p7m-apri e premi Estrai e verifica: l'app estrae il documento originale (di solito un PDF) e te lo fa scaricare, direttamente dal browser e senza installare Dike, ArubaSign o altri software."
+            "text": "Carica il file .p7m su p7m-apri e premi Estrai e verifica: l'app estrae il documento originale (di solito un PDF) e te lo fa scaricare, senza installare Dike, ArubaSign o altri software."
           }
         },
         {
@@ -218,6 +231,22 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "È un documento firmato digitalmente con firma CAdES (standard CMS/PKCS#7), usato in Italia perché ha valore legale. Contiene il documento originale, di solito un PDF, avvolto dalla firma del firmatario."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ho ricevuto un file .p7m via PEC: come lo apro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Scarica l'allegato .p7m dalla PEC e caricalo su p7m-apri: il documento firmato viene estratto e puoi aprirlo con un normale lettore PDF. Se è una fattura elettronica puoi anche visualizzarla come PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Cos'è un file .p7m.p7m?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "È un documento firmato digitalmente e poi firmato di nuovo. p7m-apri estrae automaticamente tutti i livelli di firma e mostra i firmatari di ciascuno."
           }
         },
         {

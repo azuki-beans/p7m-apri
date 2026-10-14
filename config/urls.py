@@ -5,6 +5,8 @@ from fatture import views as fatture_views
 
 urlpatterns = [
     path("", converter_views.index, name="index"),
+    path("robots.txt", converter_views.robots_txt, name="robots"),
+    path("sitemap.xml", converter_views.sitemap_xml, name="sitemap"),
     path("verify/", converter_views.verify, name="verify"),
     path("download/<uuid:pk>/", converter_views.download, name="download"),
     # Visualizzatore di fatture elettroniche (XML/p7m -> PDF).

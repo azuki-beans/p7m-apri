@@ -1,0 +1,101 @@
+name: Build & Deploy
+
+# Solo al push di un tag di versione (git tag v1.2.3 && git push origin v1.2.3), mai sui branch.
+# 1. build: pubblica l'immagine multi-arch su ghcr.io (è il prodotto open source, resta amd64+arm64)
+# 2. deploy: aggiorna la demo su Cloud Run, solo dopo l'approvazione manuale nell'environment
+#    "production" (vedi docs/deploy-cloud-run.md)
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Tag versione (v1.2.3 e 1.2.3), 'latest' all'ultima release e lo SHA.
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Variabili del repository (Settings → Secrets and variables → Actions → Variables):
+  #   GCP_PROJECT_ID     progetto GCP della demo
+  #   GCP_WIF_PROVIDER   projects/<numero>/locations/global/workloadIdentityPools/github/providers/github
+  #   GCP_DEPLOY_SA      service account di deploy (github-deploy@<progetto>.iam.gserviceaccount.com)
+  # Workload Identity Federation: nessuna chiave JSON. GCP accetta solo token emessi per
+  # l'environment "production" di questo repository, che richiede un'approvazione manuale.
+  # Senza variabili (fork, copie self-hosted) il job viene saltato e resta solo la build.
+  deploy:
+    needs: build
+    if: vars.GCP_WIF_PROVIDER != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://p7m.azukibeans.dev
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Cloud Run non legge da ghcr.io: passa dal repository Artifact Registry "ghcr" (remote,
+      # proxy di ghcr.io). Configurazione (env, secret, service account) fatta una volta su GCP:
+      # qui cambia solo l'immagine.
+      - name: Deploy
+        run: >
+          gcloud run deploy p7m-apri
+          --image europe-west1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ghcr/${{ github.repository }}:${{ github.ref_name }}
+          --region europe-west1 --project ${{ vars.GCP_PROJECT_ID }} --quiet
