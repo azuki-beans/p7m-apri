@@ -81,8 +81,21 @@ Dependencies live in `pyproject.toml` + `poetry.lock` (single source of truth: t
 
 There are no lint or automated test commands. To smoke-test extraction without a real `.p7m`, generate one with a self-signed cert: `openssl req -x509 -newkey rsa:2048 -keyout k.pem -out c.pem -days 1 -nodes -subj "/CN=TEST"` then `openssl smime -sign -binary -in <file> -signer c.pem -inkey k.pem -outform DER -nodetach -out <file>.p7m`.
 
+## Flusso di sicurezza
+
+`main` è protetto: niente push diretti (vale anche per gli admin), si entra solo da PR con i check di sicurezza verdi. Ogni modifica passa da:
+
+1. **Autoverifica**: `/security-review` in Claude Code prima della PR; l'esito va nel template (`.github/PULL_REQUEST_TEMPLATE.md`).
+2. **Pre-commit**: `.pre-commit-config.yaml` — `no-commit-to-branch` (blocca i commit su `main`), gitleaks, ruff regole `S`. Eccezioni in `ruff.toml`; un `# noqa: S…` va sempre motivato con un commento.
+3. **CI sulle PR**: `.github/workflows/sicurezza.yml` (gitleaks, ruff S, osv-scanner su `poetry.lock`, etichetta `ai-assisted`). È una copia del workflow condiviso di `sasabz/dev-tools`: il repo è pubblico e non può richiamare workflow di un'organizzazione privata. I tre job di controllo sono *required status checks* della protezione di `main`.
+4. **Revisione**: checklist del revisore nel template della PR.
+5. **Rilascio**: `deploy.yml` rilancia `sicurezza.yml` sul commit del tag, verifica che il tag punti a un commit di `main` e fa analizzare l'immagine da Trivy prima del push; CRITICAL/HIGH correggibili bloccano il rilascio.
+
+Dependabot (`.github/dependabot.yml`) propone gli aggiornamenti di pip, Docker e Actions (Django resta su 6.0.x).
+
 ## Release & deploy
 
 `.github/workflows/deploy.yml`, **only on `v*` tags** (`git tag v1.2.3 && git push origin v1.2.3`):
-1. `build` — multi-arch (amd64+arm64, intentional: public open-source image) push to `ghcr.io/azuki-beans/p7m-apri` (`vX.Y.Z`, `X.Y.Z`, `latest`, `sha`).
+0. `sicurezza` — `sicurezza.yml` via `workflow_call`; `build` parte solo se è verde.
+1. `build` — checks the tag commit is on `main`, builds amd64 with `load: true`, scans it with Trivy, then builds & pushes multi-arch (amd64+arm64, intentional: public open-source image) push to `ghcr.io/azuki-beans/p7m-apri` (`vX.Y.Z`, `X.Y.Z`, `latest`, `sha`).
 2. `deploy` — runs in the GitHub `production` environment (**manual approval**), authenticates with Workload Identity Federation (no JSON keys; repo variables `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`, `GCP_DEPLOY_SA`), then `gcloud run deploy p7m-apri --image europe-west1-docker.pkg.dev/<project>/ghcr/azuki-beans/p7m-apri:<tag>` — Cloud Run can't pull from ghcr.io, so it goes through the Artifact Registry **remote** repo `ghcr` (proxy of ghcr.io). Only the image changes; env/secrets are set once on GCP. Skipped when `GCP_WIF_PROVIDER` is unset (forks). Setup steps in `docs/deploy-cloud-run.md`.

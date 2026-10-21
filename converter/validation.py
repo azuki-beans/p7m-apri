@@ -87,7 +87,8 @@ def _build_details(status, outcome: ValidationOutcome) -> None:
             sd = getattr(qr, "service_definition", None)
             if sd is not None:
                 outcome.qtsp = getattr(sd.base_info, "service_name", "") or ""
-        except Exception:
+        # Dettagli facoltativi: se pyHanko non li fornisce restano vuoti.
+        except Exception:  # noqa: S110
             pass
 
     path = getattr(status, "validation_path", None)
@@ -102,7 +103,8 @@ def _build_details(status, outcome: ValidationOutcome) -> None:
                     "valid_from": _fmt(c.not_valid_before),
                     "valid_to": _fmt(c.not_valid_after),
                 })
-        except Exception:
+        # Catena solo informativa: se non si riesce a leggerla non si mostra.
+        except Exception:  # noqa: S110
             pass
 
 

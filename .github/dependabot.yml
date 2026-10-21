@@ -1,0 +1,25 @@
+# Sorveglianza continua: Dependabot propone gli aggiornamenti, che passano
+# poi dagli stessi controlli di sicurezza delle altre PR.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        update-types: [minor, patch]
+    ignore:
+      # Si resta su Django 6.0.x: il salto di versione minore si fa a mano.
+      - dependency-name: django
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

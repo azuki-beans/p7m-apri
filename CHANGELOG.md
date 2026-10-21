@@ -22,6 +22,14 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
   deploy; pagina fatture con canonical, Open Graph, nuove domande frequenti
   e dati strutturati `FAQPage`; nuove FAQ in home (`.p7m` da PEC, `.p7m.p7m`).
 
+- Flusso di sicurezza: `main` protetto (si entra solo da pull request),
+  controlli automatici sulle PR (gitleaks, ruff regole `S`, osv-scanner),
+  hook pre-commit, Dependabot, checklist di sicurezza nel template delle PR.
+  Il rilascio ripete i controlli, accetta solo tag su commit di `main` e
+  blocca le immagini con vulnerabilità gravi correggibili (Trivy).
+  Per superare l'analisi, `pip` è rimosso dall'immagine finale: non serve a
+  runtime e le sue librerie interne (certifi, urllib3) erano vulnerabili.
+
 ### Modificato
 
 - Il canonical della home è ora calcolato dalla richiesta, non più fisso.

@@ -38,7 +38,13 @@ RUN apt-get update \
         libpangoft2-1.0-0 \
         libharfbuzz-subset0 \
         fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip \
+    && rm -rf /usr/local/lib/python3.14/ensurepip/_bundled
+
+# pip non serve a runtime (le dipendenze arrivano dal venv del builder) e le
+# sue librerie interne (certifi, urllib3, …) restano spesso indietro: Trivy le
+# segnala come vulnerabili. Rimosso sopra, nello stesso layer di apt.
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
