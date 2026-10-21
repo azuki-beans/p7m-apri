@@ -1,0 +1,31 @@
+# Controlli a ogni commit (passaggio 2 del flusso di sicurezza, vedi CLAUDE.md).
+# Prerequisiti, una volta sola:
+#   pipx install pre-commit && brew install gitleaks && pre-commit install
+# (con un core.hooksPath globale, come quello di sasabz/dev-tools, l'hook
+# globale lo esegue da sé e `pre-commit install` non serve).
+repos:
+  # Niente commit diretti su main: si lavora su un branch e si apre una PR.
+  # Lo stesso vincolo è imposto lato GitHub dalla protezione del branch.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: no-commit-to-branch
+        name: niente commit su main
+        args: [--branch, main]
+
+  # Hook locale: quelli ufficiali di gitleaks compilano Go (fragile) o
+  # passano i nomi dei file, che `gitleaks git` rifiuta.
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (password e chiavi)
+        entry: gitleaks git --pre-commit --staged --redact --no-banner
+        language: system
+        pass_filenames: false
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.1
+    hooks:
+      - id: ruff
+        name: ruff (regole di sicurezza S)
+        args: [--select, S]

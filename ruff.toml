@@ -1,0 +1,9 @@
+# Eccezioni alle regole di sicurezza (S) usate da pre-commit e dalla CI.
+# Ogni voce è motivata: aggiungerne una nuova solo con il perché accanto.
+
+[lint.per-file-ignores]
+# OpenSSL è l'unico strumento di estrazione: argomenti in lista (niente shell),
+# eseguibile cercato nel PATH dell'immagine, file solo temporanei o scelti
+# dall'utente a riga di comando. S603/S607 qui sono falsi positivi.
+"converter/extractor.py" = ["S603", "S607"]
+"extract_p7m.py" = ["S603", "S607"]

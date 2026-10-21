@@ -1,16 +1,48 @@
+# Nell'immagine entra solo il codice dell'app (config/, converter/, fatture/,
+# manage.py) più pyproject.toml/poetry.lock. Tutto il resto è escluso qui:
+# ogni voce è definitiva, non serve a runtime.
+
+# VCS, CI e metadati del repo
 .git
+.github
 .gitignore
-__pycache__/
-*.pyc
-db.sqlite3
-*.sqlite3
+.claude
+publiccode.yml
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentazione, immagini e materiale di esempio (README & co. inclusi)
+*.md
+docs/
+brand/
+test_samples/
+data_samples/
+invoice_samples/
+
+# Script CLI di riferimento (l'app non li usa)
+extract_p7m.py
+extract_p7m.sh
+
+# Ambiente locale, IDE e cache dei tool
 .venv/
 venv/
-estratti/
+poetry.toml
+.idea/
+.vscode/
+.ruff_cache/
+**/__pycache__/
+**/*.pyc
+.DS_Store
+
+# Dati locali: DB, cache Trust List, file estratti, log
+*.sqlite3
+*.log
 trust-lists/
+estratti/
 *.p7m
-README.md
-CLAUDE.md
+
+# Segreti e stack (mai nell'immagine)
 .env
+.env.*
 stacks/
-data_samples/

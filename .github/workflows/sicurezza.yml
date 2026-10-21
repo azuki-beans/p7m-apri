@@ -1,0 +1,128 @@
+# ============================================================
+# Controlli di sicurezza (passaggio 3 del flusso, vedi CLAUDE.md).
+#
+# Girano su ogni PR (sono check obbligatori per il merge in main), a ogni
+# push su main, il lunedì anche senza modifiche (nuove falle nelle librerie)
+# e prima di ogni rilascio: deploy.yml li richiama con workflow_call e la
+# build dell'immagine parte solo se sono tutti verdi.
+#
+# Ricalca il workflow condiviso di sasabz/dev-tools, copiato qui perché il
+# repo è pubblico e non può richiamare workflow di un'organizzazione privata.
+# Ogni job lascia il proprio report come artifact del run: è la prova che
+# il controllo è stato fatto, legata alla PR o al tag.
+# ============================================================
+name: Sicurezza
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: sicurezza-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  segreti:
+    name: Password e chiavi (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        env:
+          EVENTO: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Sulle PR solo i commit nuovi, altrimenti tutta la storia.
+          # Falsi positivi: fingerprint in .gitleaksignore.
+          OPTS=""
+          [ "$EVENTO" = "pull_request" ] && OPTS="--log-opts=$BASE..$HEAD"
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git /repo $OPTS --redact --no-banner \
+            --report-format json --report-path /repo/report-gitleaks.json
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-gitleaks
+          path: report-gitleaks.json
+          retention-days: 90
+
+  codice:
+    name: Codice rischioso (ruff, regole S)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ruff --select S
+        run: |
+          # Le eccezioni motivate stanno in ruff.toml: --select sostituisce
+          # le regole, non le esclusioni.
+          pipx run ruff==0.17.1 check --select S --exit-zero \
+            --output-format json --output-file report-ruff.json .
+          pipx run ruff==0.17.1 check --select S --output-format github .
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-ruff
+          path: report-ruff.json
+          retention-days: 90
+
+  dipendenze:
+    name: Librerie con falle note (osv-scanner)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: osv-scanner
+        run: |
+          # Legge poetry.lock (e ogni altro lock del repo).
+          set +e
+          docker run --rm -v "$PWD:/src" ghcr.io/google/osv-scanner:v2.7.0 \
+            scan source -r /src --format markdown --output /src/report-osv.md
+          ESITO=$?
+          cat report-osv.md >> "$GITHUB_STEP_SUMMARY"
+          exit $ESITO
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-osv
+          path: report-osv.md
+          retention-days: 90
+
+  etichetta-ai:
+    name: Etichetta ai-assisted
+    # Le PR dai fork hanno un token in sola lettura: lì l'etichetta si salta.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Etichetta se un commit ha il trailer di Claude
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if gh api "repos/$REPO/pulls/$PR/commits" --paginate --jq '.[].commit.message' \
+              | grep -qi '^Co-Authored-By: Claude'; then
+            gh label create ai-assisted -R "$REPO" --force --color 7057ff \
+              --description "Contiene codice scritto con l'aiuto di Claude"
+            gh pr edit "$PR" -R "$REPO" --add-label ai-assisted
+          fi

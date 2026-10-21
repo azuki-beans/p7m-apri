@@ -26,10 +26,10 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Valida publiccode.yml
-        uses: italia/publiccode-parser-action@v1.5.1
+        uses: italia/publiccode-parser-action@v1.7.0
         with:
           publiccode: publiccode.yml
           # I commenti inline passano da reviewdog, che serve un token in

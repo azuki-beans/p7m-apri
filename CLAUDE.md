@@ -28,7 +28,7 @@ Separate from p7m extraction; shares nothing but the stack and the ephemeral-BLO
 - `fatture/templates/fatture/invoice.html` — the print template: `@page` A4 with page-number footer, one `<section class="fattura">` per body with `page-break-after`, header band + parties + line-items table (repeating `thead`, zebra rows) + VAT summary + totals + payment box. No custom template tags, no external fonts (uses Helvetica → DejaVu in Docker), fully self-contained CSS.
 - Two-step HTMX flow mirrors converter: `POST /fatture/render/` parses+renders, stores a `Fattura` row (PDF as `BinaryField` BLOB, **never on disk**), returns `result.html` with the `<iframe>` preview; `GET /fatture/pdf/<uuid>/` serves it `inline` (preview) or `attachment` with `?dl=1` (download). Rows purged after 1h by `_cleanup()`. The view rejects non-`.xml` uploads.
 - `fatture/migrations/0001_initial.py` is hand-maintained, same rule as converter.
-- WeasyPrint needs system libs (Pango/Cairo/HarfBuzz + fonts) — installed in the Dockerfile apt step. Extraction still works without them; only the invoice viewer needs them.
+- WeasyPrint needs system libs (Pango + HarfBuzz subset + fonts; no Cairo since WeasyPrint dropped it) — installed in the Dockerfile apt step. Extraction still works without them; only the invoice viewer needs them.
 - **Accepts `.p7m` too**: `fatture/views.py::_to_invoice_xml(raw, name)` returns the invoice XML, extracting first (via `converter.extractor.extract`) when the input is a `.p7m` (by extension or DER first byte `0x30`). Both `render_view` (web) and `api_pdf` route through it, so the viewer works on a signed XML without a manual extraction step.
 - **HTTP API** `POST /fatture/api/pdf/` (`api_pdf`, `@csrf_exempt`): input is a multipart `file` field or raw request body (`?filename=` optional); output is `application/pdf` (`?dl=1` forces attachment) or JSON `{"error": …}` with 400/422/500. Query `accent` overrides the theme colour. Documented with live `curl` examples on the `/fatture/` page (view passes `api_url` via `request.build_absolute_uri`, since the `request` context processor is not enabled).
 - **p7m → fattura bridge**: `converter/views.py::verify` calls `fatture.parser.is_fattura(bytes(result.content))` (lightweight root-tag check, no exceptions) and, when true, adds `fattura_url = reverse("fattura_da_conversione", <conv id>)` to the context; `converter/result.html` renders a "Visualizzala come PDF" button. `fatture/views.py::from_conversion(pk)` loads that `Conversion` BLOB, renders the PDF into a new `Fattura` row and returns the full-page `fatture/view.html` (which `{% include %}`s `result.html`). This couples `converter → fatture.parser` and `fatture → converter.models/extractor` — no import cycle (parser imports no views).
@@ -77,12 +77,25 @@ poetry install
 poetry run python manage.py migrate && poetry run python manage.py runserver
 ```
 
-Dependencies live in `pyproject.toml` + `poetry.lock` (single source of truth: the Dockerfile installs with Poetry too, `POETRY_VIRTUALENVS_CREATE=false`). There is no `requirements.txt`.
+Dependencies live in `pyproject.toml` + `poetry.lock` (single source of truth: the Dockerfile installs with Poetry too, in a multi-stage build: the `builder` stage installs deps into `/opt/venv`, the runtime stage copies only that venv — no Poetry in the final image — and prunes Django translations except `it`/`en`). There is no `requirements.txt`.
 
 There are no lint or automated test commands. To smoke-test extraction without a real `.p7m`, generate one with a self-signed cert: `openssl req -x509 -newkey rsa:2048 -keyout k.pem -out c.pem -days 1 -nodes -subj "/CN=TEST"` then `openssl smime -sign -binary -in <file> -signer c.pem -inkey k.pem -outform DER -nodetach -out <file>.p7m`.
+
+## Flusso di sicurezza
+
+`main` è protetto: niente push diretti (vale anche per gli admin), si entra solo da PR con i check di sicurezza verdi. Ogni modifica passa da:
+
+1. **Autoverifica**: `/security-review` in Claude Code prima della PR; l'esito va nel template (`.github/PULL_REQUEST_TEMPLATE.md`).
+2. **Pre-commit**: `.pre-commit-config.yaml` — `no-commit-to-branch` (blocca i commit su `main`), gitleaks, ruff regole `S`. Eccezioni in `ruff.toml`; un `# noqa: S…` va sempre motivato con un commento.
+3. **CI sulle PR**: `.github/workflows/sicurezza.yml` (gitleaks, ruff S, osv-scanner su `poetry.lock`, etichetta `ai-assisted`). È una copia del workflow condiviso di `sasabz/dev-tools`: il repo è pubblico e non può richiamare workflow di un'organizzazione privata. I tre job di controllo sono *required status checks* della protezione di `main`.
+4. **Revisione**: checklist del revisore nel template della PR.
+5. **Rilascio**: `deploy.yml` rilancia `sicurezza.yml` sul commit del tag, verifica che il tag punti a un commit di `main` e fa analizzare l'immagine da Trivy prima del push; CRITICAL/HIGH correggibili bloccano il rilascio.
+
+Dependabot (`.github/dependabot.yml`) propone gli aggiornamenti di pip, Docker e Actions (Django resta su 6.0.x).
 
 ## Release & deploy
 
 `.github/workflows/deploy.yml`, **only on `v*` tags** (`git tag v1.2.3 && git push origin v1.2.3`):
-1. `build` — multi-arch (amd64+arm64, intentional: public open-source image) push to `ghcr.io/azuki-beans/p7m-apri` (`vX.Y.Z`, `X.Y.Z`, `latest`, `sha`).
+0. `sicurezza` — `sicurezza.yml` via `workflow_call`; `build` parte solo se è verde.
+1. `build` — checks the tag commit is on `main`, builds amd64 with `load: true`, scans it with Trivy, then builds & pushes multi-arch (amd64+arm64, intentional: public open-source image) push to `ghcr.io/azuki-beans/p7m-apri` (`vX.Y.Z`, `X.Y.Z`, `latest`, `sha`).
 2. `deploy` — runs in the GitHub `production` environment (**manual approval**), authenticates with Workload Identity Federation (no JSON keys; repo variables `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`, `GCP_DEPLOY_SA`), then `gcloud run deploy p7m-apri --image europe-west1-docker.pkg.dev/<project>/ghcr/azuki-beans/p7m-apri:<tag>` — Cloud Run can't pull from ghcr.io, so it goes through the Artifact Registry **remote** repo `ghcr` (proxy of ghcr.io). Only the image changes; env/secrets are set once on GCP. Skipped when `GCP_WIF_PROVIDER` is unset (forks). Setup steps in `docs/deploy-cloud-run.md`.

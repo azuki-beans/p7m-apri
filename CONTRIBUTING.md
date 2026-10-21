@@ -64,6 +64,17 @@ verificare la correzione.
 4. Apri una pull request verso `main`, descrivendo *cosa* cambia e *perché*, e
    collegando la issue di riferimento.
 
+Il branch `main` è protetto: non accetta push diretti, nemmeno dai
+maintainer, e una pull request si può integrare solo quando i controlli
+automatici di sicurezza (workflow *Sicurezza*: password e chiavi, codice
+rischioso, librerie con vulnerabilità note) sono tutti verdi. Per vedere gli
+stessi problemi già in locale, prima del commit:
+
+```bash
+pipx install pre-commit && brew install gitleaks   # una volta sola
+pre-commit install
+```
+
 Ogni pull request riceve una revisione. Se non può essere integrata, il motivo
 viene spiegato per iscritto nella discussione: una proposta rifiutata resta
 comunque utile come documentazione di una strada già valutata.
@@ -107,8 +118,8 @@ poetry run python manage.py runserver
 ```
 
 Serve `openssl` installato nel sistema. La visualizzazione delle fatture
-richiede anche le librerie di sistema di WeasyPrint (Pango, Cairo, HarfBuzz e i
-font); su macOS si installano con `brew install pango cairo harfbuzz`. In
+richiede anche le librerie di sistema di WeasyPrint (Pango, HarfBuzz e i
+font); su macOS si installano con `brew install pango harfbuzz`. In
 alternativa si può lavorare direttamente nel container, dove sono già presenti.
 
 ### Generare un file `.p7m` di prova

@@ -1,8 +1,11 @@
 name: Build & Deploy
 
 # Solo al push di un tag di versione (git tag v1.2.3 && git push origin v1.2.3), mai sui branch.
-# 1. build: pubblica l'immagine multi-arch su ghcr.io (è il prodotto open source, resta amd64+arm64)
-# 2. deploy: aggiorna la demo su Cloud Run, solo dopo l'approvazione manuale nell'environment
+# 1. sicurezza: gli stessi controlli delle PR (sicurezza.yml) rieseguiti sul commit del tag
+# 2. build: il tag deve puntare a un commit di main (quindi passato da una PR); l'immagine
+#    amd64 passa da Trivy e solo dopo si pubblica la multi-arch su ghcr.io (è il prodotto
+#    open source, resta amd64+arm64)
+# 3. deploy: aggiorna la demo su Cloud Run, solo dopo l'approvazione manuale nell'environment
 #    "production" (vedi docs/deploy-cloud-run.md)
 on:
   push:
@@ -19,17 +22,36 @@ env:
 permissions: {}
 
 jobs:
+  sicurezza:
+    uses: ./.github/workflows/sicurezza.yml
+    permissions:
+      contents: read
+      # Richiesti dal job dell'etichetta ai-assisted, che sui tag non gira.
+      pull-requests: write
+      issues: write
+
   build:
+    needs: sicurezza
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Si rilascia solo codice entrato in main da una PR (main è protetto):
+      # un tag messo su un branch qualsiasi non produce immagini.
+      - name: Il tag punta a un commit di main
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::$GITHUB_REF_NAME non è un commit di main"; exit 1; }
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -37,7 +59,7 @@ jobs:
 
       - name: Extract image metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # Tag versione (v1.2.3 e 1.2.3), 'latest' all'ultima release e lo SHA.
@@ -48,13 +70,49 @@ jobs:
             type=sha
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
+      # Prima si analizza, poi si pubblica: la build amd64 viene caricata nel
+      # daemon locale (load non funziona con più piattaforme) e passa da Trivy.
+      - name: Build per l'analisi (amd64)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: p7m-apri:analisi
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Falle CRITICAL/HIGH con una correzione disponibile bloccano il rilascio.
+      # Action fissata per SHA.
+      - name: Analisi dell'immagine (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: p7m-apri:analisi
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+          output: report-trivy.txt
+
+      - name: Report Trivy nel log
+        if: always()
+        run: cat report-trivy.txt
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-trivy-${{ github.ref_name }}
+          path: report-trivy.txt
+          retention-days: 90
+
+      # Stessi layer dell'analisi (cache gha) per amd64, più arm64.
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -83,13 +141,13 @@ jobs:
       id-token: write
     steps:
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOY_SA }}
 
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       # Cloud Run non legge da ghcr.io: passa dal repository Artifact Registry "ghcr" (remote,
       # proxy di ghcr.io). Configurazione (env, secret, service account) fatta una volta su GCP:

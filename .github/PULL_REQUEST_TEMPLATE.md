@@ -14,6 +14,13 @@
 
 <!-- Quali prove hai fatto: file caricati, comandi eseguiti, esito atteso. -->
 
+## Autoverifica di sicurezza (a cura dell'autore)
+
+- [ ] Ho eseguito `/security-review` in Claude Code (o una revisione equivalente) sulla modifica
+- [ ] I problemi trovati sono corretti, o spiegati qui sotto
+
+<!-- Incolla l'esito della revisione di sicurezza. -->
+
 ## Lista di controllo
 
 - [ ] Il codice segue lo stile del progetto e passa `ruff check .` e `ruff format --check .`
@@ -23,3 +30,12 @@
 - [ ] Ho aggiornato `README.md` e/o la documentazione utente dove serviva
 - [ ] Ho aggiunto una voce in `CHANGELOG.md` sotto «Non rilasciato»
 - [ ] Non ho incluso documenti o dati reali nei file di esempio
+
+## Checklist del revisore (mai l'autore)
+
+- [ ] **Caricamento di file**: estensione e dimensione controllate, contenuto mai scritto su disco in modo permanente, nessun nome di file dell'utente usato come percorso
+- [ ] **Comandi esterni**: OpenSSL invocato con argomenti in lista, mai con `shell=True` né con stringhe composte dall'input
+- [ ] **Input degli utenti**: parametri validati (es. `accent` solo HEX), niente HTML costruito a mano, nessun URL scelto dall'utente passato a WeasyPrint
+- [ ] **Dati personali**: i documenti caricati non finiscono nei log e restano al più un'ora
+- [ ] **Password e chiavi**: solo da variabili d'ambiente, nessuna nel codice
+- [ ] **Controlli automatici** (workflow Sicurezza) tutti verdi
