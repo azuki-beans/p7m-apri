@@ -25,6 +25,14 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 ### Modificato
 
 - Il canonical della home è ora calcolato dalla richiesta, non più fisso.
+- Immagine Docker più leggera (da ~490 a ~290 MB): build multi-stage con le
+  dipendenze in un virtualenv copiato nell'immagine finale (Poetry resta solo
+  nello stage di build), librerie di sistema ridotte al minimo richiesto da
+  WeasyPrint (niente Cairo), traduzioni di Django limitate a italiano e
+  inglese, `.dockerignore` più rigoroso (documentazione, esempi, CI esclusi).
+- Dipendenze aggiornate: Django 6.0.9, fatturapa 0.2 (il prezzo unitario non
+  viene più arrotondato a due decimali), gunicorn 26.2, pyHanko 0.38,
+  WeasyPrint 70, Poetry 2.5.1; GitHub Actions alle ultime versioni major.
 - Testi e meta description non dicono più che l'elaborazione avviene "dal
   browser": il file viene caricato ed elaborato sul server.
 

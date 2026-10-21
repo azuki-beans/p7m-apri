@@ -107,8 +107,8 @@ poetry run python manage.py runserver
 ```
 
 Serve `openssl` installato nel sistema. La visualizzazione delle fatture
-richiede anche le librerie di sistema di WeasyPrint (Pango, Cairo, HarfBuzz e i
-font); su macOS si installano con `brew install pango cairo harfbuzz`. In
+richiede anche le librerie di sistema di WeasyPrint (Pango, HarfBuzz e i
+font); su macOS si installano con `brew install pango harfbuzz`. In
 alternativa si può lavorare direttamente nel container, dove sono già presenti.
 
 ### Generare un file `.p7m` di prova
