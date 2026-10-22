@@ -95,6 +95,21 @@ TRUST_LIST_TERRITORIES = {
     if t.strip()
 }
 
+# Log su stdout (Cloud Run li raccoglie da lì). pyHanko registra ogni firma
+# non verificabile (certificato scaduto, revocato, CA non riconosciuta…) come
+# warning con l'intero traceback: è un esito normale, già mostrato all'utente,
+# quindi i suoi logger scrivono solo gli errori veri.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "pyhanko": {"level": "ERROR"},
+        "pyhanko_certvalidator": {"level": "ERROR"},
+    },
+}
+
 LANGUAGE_CODE = "it-it"
 TIME_ZONE = "Europe/Rome"
 USE_I18N = True
