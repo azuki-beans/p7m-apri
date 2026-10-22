@@ -43,6 +43,7 @@ class ValidationOutcome:
     qualified: str = ""          # etichetta sulla qualificazione eIDAS
     qtsp: str = ""               # nome del servizio fiduciario (QTSP)
     validation_time: str = ""
+    problem: str = ""            # perché la firma non è riconosciuta, in chiaro
     chain: list = field(default_factory=list)  # catena: lista di dict
 
 
@@ -58,6 +59,47 @@ def _fmt(dt, with_time=False) -> str:
         return dt.strftime("%d/%m/%Y %H:%M" if with_time else "%d/%m/%Y")
     except Exception:
         return ""
+
+
+# Motivi più comuni per cui pyHanko non riconosce la firma (indicazioni AdES,
+# ETSI EN 319 102-1), spiegati all'utente. Gli altri restano col solo codice.
+_PROBLEMI = {
+    "EXPIRED": "il certificato del firmatario è scaduto{scadenza}. Senza una "
+               "marca temporale non si può dimostrare che la firma sia stata "
+               "apposta quando il certificato era ancora valido",
+    "NOT_YET_VALID": "il certificato del firmatario non è ancora valido",
+    "REVOKED": "il certificato del firmatario è stato revocato",
+    "REVOKED_NO_POE": "il certificato del firmatario è stato revocato e non c'è "
+                      "una marca temporale che provi una firma precedente",
+    "REVOKED_CA_NO_POE": "il certificato di un'autorità della catena è stato revocato",
+    "NO_CERTIFICATE_CHAIN_FOUND": "il certificato non risale a un prestatore di "
+                                  "servizi fiduciari delle EU Trusted List",
+    "OUT_OF_BOUNDS_NO_POE": "la firma non rientra nel periodo di validità del "
+                            "certificato e non c'è una marca temporale",
+    "TRY_LATER": "lo stato di revoca del certificato non è al momento "
+                 "disponibile: riprova più tardi",
+}
+
+
+def _problem(status, outcome: ValidationOutcome) -> str:
+    """Motivo, in italiano, per cui la firma non è riconosciuta ("" se lo è)."""
+    indic = getattr(status, "trust_problem_indic", None)
+    if indic is None:
+        return ""
+    name = getattr(indic, "name", str(indic))
+    # Fuori dal periodo di validità senza marca temporale: se il certificato
+    # è già scaduto al momento della verifica, lo si dice esplicitamente.
+    cert, moment = status.signing_cert, getattr(status, "validation_time", None)
+    if name == "OUT_OF_BOUNDS_NO_POE" and cert is not None and moment is not None:
+        try:
+            if cert.not_valid_after < moment:
+                name = "EXPIRED"
+        except TypeError:
+            pass
+    scadenza = f" il {outcome.signer_valid_to}" if outcome.signer_valid_to else ""
+    return _PROBLEMI.get(name, f"esito della verifica: {name}").format(
+        scadenza=scadenza
+    )
 
 
 def _build_details(status, outcome: ValidationOutcome) -> None:
@@ -194,6 +236,7 @@ async def _validate(p7m_bytes: bytes) -> list[ValidationOutcome]:
                 if status.signing_cert else "",
             )
             _build_details(status, outcome)
+            outcome.problem = _problem(status, outcome)
             outcomes.append(outcome)
     return outcomes
 

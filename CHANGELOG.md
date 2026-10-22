@@ -32,6 +32,13 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Modificato
 
+- Verifica eIDAS: quando la firma non è riconosciuta viene spiegato il
+  motivo (es. certificato del firmatario scaduto, senza marca temporale;
+  certificato revocato; CA fuori dalle EU Trusted List) invece del solo
+  «catena riconosciuta: no».
+- Log: gli esiti negativi della verifica non riempiono più i log di
+  Cloud Run con un traceback a ogni firma; pyHanko registra solo gli errori.
+
 - Il canonical della home è ora calcolato dalla richiesta, non più fisso.
 - Immagine Docker più leggera (da ~490 a ~290 MB): build multi-stage con le
   dipendenze in un virtualenv copiato nell'immagine finale (Poetry resta solo

@@ -53,10 +53,12 @@
             </div>
         {% else %}
             <div style="margin-top:.6rem;font-size:.85rem;color:#854d0e;">
-                ⚠️ Validità legale <strong>non confermata</strong> —
-                integrità: {{ validation.intact|yesno:"ok,no" }},
+                ⚠️ Validità legale <strong>non confermata</strong>{% if validation.problem %}:
+                {{ validation.problem }}.<br>
+                <span style="font-size:.8rem;">Dettaglio — integrità{% else %} —
+                integrità{% endif %}: {{ validation.intact|yesno:"ok,no" }},
                 firma: {{ validation.valid|yesno:"valida,non valida" }},
-                catena riconosciuta: {{ validation.trusted|yesno:"sì,no" }}.
+                catena riconosciuta: {{ validation.trusted|yesno:"sì,no" }}.{% if validation.problem %}</span>{% endif %}
             </div>
         {% endif %}
         {% if validation.available %}
