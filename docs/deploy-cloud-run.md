@@ -34,6 +34,11 @@ gcloud run services update p7m-apri --region europe-west1 \
   --update-env-vars DJANGO_ALLOWED_HOSTS=p7m-apri-xxxx.europe-west1.run.app,CSRF_TRUSTED_ORIGINS=https://p7m-apri-xxxx.europe-west1.run.app
 ```
 
+Se pubblichi il servizio su un dominio tuo (es. `https://p7m.azienda.it`),
+aggiungilo a `DJANGO_ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` e imposta
+`SITE_URL=https://p7m.azienda.it`: canonical e sitemap punteranno a quel
+dominio e non all'URL `*.run.app`, evitando contenuti duplicati su Google.
+
 Per attivare gli analytics Umami aggiungi nello stesso modo
 `UMAMI_SRC` e `UMAMI_WEBSITE_ID`. Per aggiornare l'app in futuro basta
 rilanciare il comando `gcloud run deploy --source .`, oppure automatizzare il

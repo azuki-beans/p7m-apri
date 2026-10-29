@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_safe
 
 from fatture.parser import is_fattura
 
@@ -23,12 +23,22 @@ def _cleanup():
     ).delete()
 
 
-@require_GET
+def public_url(request, name: str) -> str:
+    """URL assoluto della view `name` sul dominio pubblico (`SITE_URL`)."""
+    path = reverse(name)
+    if settings.SITE_URL:
+        return settings.SITE_URL + path
+    return request.build_absolute_uri(path)
+
+
+# require_safe (GET + HEAD): crawler e strumenti SEO usano anche HEAD, che con
+# require_GET riceverebbe un 405.
+@require_safe
 def index(request):
     return render(request, "converter/index.html", {
         "umami_src": settings.UMAMI_SRC,
         "umami_website_id": settings.UMAMI_WEBSITE_ID,
-        "canonical": request.build_absolute_uri(reverse("index")),
+        "canonical": public_url(request, "index"),
     })
 
 
@@ -36,9 +46,9 @@ def index(request):
 SITEMAP_PAGES = ["index", "fatture"]
 
 
-@require_GET
+@require_safe
 def robots_txt(request):
-    sitemap = request.build_absolute_uri(reverse("sitemap"))
+    sitemap = public_url(request, "sitemap")
     body = (
         "User-agent: *\n"
         # Endpoint di elaborazione e download: niente da indicizzare.
@@ -53,10 +63,10 @@ def robots_txt(request):
     return HttpResponse(body, content_type="text/plain")
 
 
-@require_GET
+@require_safe
 def sitemap_xml(request):
     urls = "".join(
-        f"<url><loc>{request.build_absolute_uri(reverse(name))}</loc></url>"
+        f"<url><loc>{public_url(request, name)}</loc></url>"
         for name in SITEMAP_PAGES
     )
     body = (

@@ -140,6 +140,7 @@ The service restarts on its own (`restart: unless-stopped`) and keeps its databa
 | `DJANGO_SECRET_KEY` | Secret key (required in production). |
 | `DJANGO_ALLOWED_HOSTS` | Allowed hostnames, e.g. `p7m.example.com`. |
 | `CSRF_TRUSTED_ORIGINS` | Trusted origins with scheme, e.g. `https://p7m.example.com`. |
+| `SITE_URL` | Public URL with scheme, e.g. `https://p7m.example.com`: used for canonical, `sitemap.xml` and `robots.txt` (empty = request host). |
 | `DJANGO_DEBUG` | `1`/`0` (default `0`). |
 | `DJANGO_DB_PATH` | Path of the SQLite database. |
 | `TRUST_LIST_CACHE_DIR` | Cache of the EU Trusted Lists for eIDAS validation. |

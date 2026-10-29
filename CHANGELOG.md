@@ -9,6 +9,9 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- Variabile `SITE_URL`: se valorizzata, canonical, `sitemap.xml` e
+  `robots.txt` puntano sempre al dominio pubblico, anche quando il servizio
+  risponde da altri host (es. l'URL `*.run.app` di Cloud Run).
 - Supporto ai `.p7m` **annidati** (documento firmato più volte in cascata,
   es. `documento.pdf.p7m.p7m`): l'estrazione attraversa tutti i livelli fino
   al documento originale e riporta firmatari ed esito di integrità di ciascun
@@ -32,6 +35,8 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Modificato
 
+- Home, pagina fatture, `robots.txt` e `sitemap.xml` rispondono anche alle
+  richieste `HEAD` (prima `405`), usate da crawler e strumenti SEO.
 - Verifica eIDAS: quando la firma non è riconosciuta viene spiegato il
   motivo (es. certificato del firmatario scaduto, senza marca temporale;
   certificato revocato; CA fuori dalle EU Trusted List) invece del solo
