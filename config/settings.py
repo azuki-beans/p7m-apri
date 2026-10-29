@@ -19,6 +19,13 @@ CSRF_TRUSTED_ORIGINS = [
 # URL assoluti (es. gli esempi API in /fatture/) verrebbero costruiti in http://.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# URL pubblico del sito, con schema e senza "/" finale (es.
+# https://p7m.azienda.it). Se valorizzato, canonical, sitemap.xml e robots.txt
+# usano sempre questo dominio anche quando il servizio è raggiungibile da altri
+# host (es. l'URL *.run.app di Cloud Run), così i motori di ricerca non
+# indicizzano duplicati. Vuoto = si usa l'host della richiesta.
+SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
+
 INSTALLED_APPS = [
     "converter",
     "fatture",

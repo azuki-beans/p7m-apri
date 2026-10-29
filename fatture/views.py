@@ -6,10 +6,11 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_safe
 
 from converter.extractor import extract
 from converter.models import Conversion
+from converter.views import public_url
 
 from .models import Fattura
 from .pdf import render_pdf
@@ -52,13 +53,13 @@ def _to_invoice_xml(raw: bytes, name: str = "") -> tuple[bytes, dict | None]:
     return raw, None
 
 
-@require_GET
+@require_safe
 def index(request):
     return render(request, "fatture/index.html", {
         "umami_src": settings.UMAMI_SRC,
         "umami_website_id": settings.UMAMI_WEBSITE_ID,
-        "api_url": request.build_absolute_uri(reverse("api_fattura_pdf")),
-        "canonical": request.build_absolute_uri(reverse("fatture")),
+        "api_url": public_url(request, "api_fattura_pdf"),
+        "canonical": public_url(request, "fatture"),
     })
 
 
