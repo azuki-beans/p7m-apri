@@ -35,6 +35,8 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Modificato
 
+- `brotli` 1.2.1 e `brotlicffi` 1.2.1.0 (dipendenze di WeasyPrint): le
+  versioni precedenti avevano una vulnerabilità critica (GHSA-9v8h-qqgm-4m35).
 - Home, pagina fatture, `robots.txt` e `sitemap.xml` rispondono anche alle
   richieste `HEAD` (prima `405`), usate da crawler e strumenti SEO.
 - Verifica eIDAS: quando la firma non è riconosciuta viene spiegato il
