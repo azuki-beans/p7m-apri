@@ -79,6 +79,7 @@
         <a href="{% url 'index' %}">← Apri file .p7m</a>
     </nav>
     <main class="card">
+        {% include "converter/_condividi.html" %}
         <h1>📄 Visualizzatore fatture elettroniche</h1>
         <p class="sub">Carica una <strong>fattura elettronica</strong> (FatturaPA)
             in formato <code>.xml</code> o <code>.p7m</code>: la trasformiamo nel
