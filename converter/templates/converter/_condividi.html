@@ -1,0 +1,150 @@
+{% comment %}
+Pulsante "Condividi" in alto a destra della .card, con menu: stesso simbolo e stesse voci di
+coperni (senza PNG/PDF). Condivisione nativa del telefono (se c'è navigator.share), servizi più
+comuni come semplici URL (nessuno script dei social) e copia del link. Condivide il canonical
+della pagina. Solo sulle pagine pubbliche: mai su quelle con un file dell'utente.
+Uso: {% include "converter/_condividi.html" %} come primo figlio di <main class="card">.
+{% endcomment %}
+<div class="condividi">
+    <button type="button" id="condividi-btn" class="condividi-btn" title="Condividi"
+            aria-haspopup="menu" aria-controls="menu-condividi" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>Condividi</span>
+    </button>
+    <div class="menu-condividi" id="menu-condividi" role="menu" aria-label="Condividi" hidden>
+        <button type="button" role="menuitem" data-azione="nativo" data-colore hidden>Condividi con…</button>
+        <div class="reti">
+            <a role="menuitem" data-rete="whatsapp" data-colore style="--colore:#25d366" target="_blank" rel="noopener">WhatsApp</a>
+            <a role="menuitem" data-rete="telegram" data-colore style="--colore:#229ed9" target="_blank" rel="noopener">Telegram</a>
+            <a role="menuitem" data-rete="email" data-colore>Email</a>
+            <a role="menuitem" data-rete="facebook" data-colore style="--colore:#1877f2" target="_blank" rel="noopener">Facebook</a>
+            <a role="menuitem" data-rete="x" data-colore style="--colore:#000" target="_blank" rel="noopener">X</a>
+            <a role="menuitem" data-rete="linkedin" data-colore style="--colore:#0a66c2" target="_blank" rel="noopener">LinkedIn</a>
+            <a role="menuitem" data-rete="bluesky" data-colore style="--colore:#1185fe" target="_blank" rel="noopener">Bluesky</a>
+        </div>
+        <hr>
+        <button type="button" role="menuitem" data-azione="copia">Copia link</button>
+        <div class="stato" id="condividi-stato" aria-live="polite"></div>
+    </div>
+</div>
+
+<style>
+    .card { position: relative; }
+    .card > h1 { padding-right: 8rem; }
+    .condividi { position: absolute; top: 1.5rem; right: 1.5rem; }
+    /* le regole globali "button" della pagina (larghezza piena, colore pieno) qui non valgono */
+    .condividi .condividi-btn {
+        display: inline-flex; align-items: center; gap: .4rem; width: auto;
+        padding: .4rem .75rem; border: 1px solid #d0d4da; border-radius: 8px;
+        background: #fff; color: #374151; font-size: .85rem; font-weight: 600;
+    }
+    .condividi .condividi-btn:hover { background: #f4f5f7; }
+    .condividi-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .menu-condividi {
+        position: absolute; right: 0; top: calc(100% + 6px); z-index: 10;
+        width: 280px; padding: 6px;
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(0,0,0,.15);
+        font-size: 14px; text-align: left;
+    }
+    .menu-condividi[hidden] { display: none; }
+    .menu-condividi .reti { display: grid; grid-template-columns: 1fr 1fr; }
+    .menu-condividi a, .menu-condividi button {
+        display: flex; align-items: center; gap: 8px; width: 100%;
+        padding: 8px 10px; border: 0; border-radius: 6px;
+        background: none; color: #1a1a1a; font: inherit; font-weight: normal;
+        text-align: left; text-decoration: none; cursor: pointer;
+    }
+    .menu-condividi a:hover, .menu-condividi button:hover,
+    .menu-condividi a:focus-visible, .menu-condividi button:focus-visible { background: #f4f5f7; }
+    .menu-condividi button[hidden] { display: none; }
+    /* pallino col colore del servizio: niente loghi né script dei social */
+    .menu-condividi [data-colore]::before {
+        content: ''; flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%;
+        background: var(--colore, #6b7280);
+    }
+    .menu-condividi hr { border: 0; border-top: 1px solid #e5e7eb; margin: 6px 4px; }
+    .menu-condividi .stato { padding: 4px 10px 2px; color: #6b7280; font-size: 12px; }
+    .menu-condividi .stato:empty { display: none; }
+
+    /* sul telefono: solo l'icona, e il menu diventa un pannello dal basso */
+    @media (max-width: 600px) {
+        .card > h1 { padding-right: 3rem; }
+        .condividi { top: 1rem; right: 1rem; }
+        .condividi-btn span { display: none; }
+        .menu-condividi {
+            position: fixed; left: 0; right: 0; top: auto; bottom: 0; width: auto;
+            border-radius: 10px 10px 0 0;
+            padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+            font-size: 15px;
+        }
+    }
+</style>
+
+<script>
+    (() => {
+        const pulsante = document.getElementById('condividi-btn');
+        const menu = document.getElementById('menu-condividi');
+        const stato = document.getElementById('condividi-stato');
+        const enc = encodeURIComponent;
+
+        function dati() {
+            const canonical = document.querySelector('link[rel="canonical"]');
+            const titolo = document.title;
+            return { url: canonical ? canonical.href : location.href, titolo, testo: titolo };
+        }
+
+        const RETI = {
+            whatsapp: ({ url, testo }) => `https://wa.me/?text=${enc(`${testo}\n${url}`)}`,
+            telegram: ({ url, testo }) => `https://t.me/share/url?url=${enc(url)}&text=${enc(testo)}`,
+            email: ({ url, titolo, testo }) => `mailto:?subject=${enc(titolo)}&body=${enc(`${testo}\n\n${url}`)}`,
+            facebook: ({ url }) => `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`,
+            x: ({ url, testo }) => `https://x.com/intent/tweet?text=${enc(testo)}&url=${enc(url)}`,
+            linkedin: ({ url }) => `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`,
+            bluesky: ({ url, testo }) => `https://bsky.app/intent/compose?text=${enc(`${testo} ${url}`)}`,
+        };
+
+        function apriMenu(aperto) {
+            menu.hidden = !aperto;
+            pulsante.setAttribute('aria-expanded', aperto);
+            if (!aperto) return;
+            const d = dati();
+            for (const a of menu.querySelectorAll('[data-rete]')) a.href = RETI[a.dataset.rete](d);
+            menu.querySelector('[data-azione="nativo"]').hidden = !navigator.share;
+            stato.textContent = '';
+            menu.querySelector('[role="menuitem"]:not([hidden])').focus({ preventScroll: true });
+        }
+
+        pulsante.addEventListener('click', () => apriMenu(menu.hidden));
+        document.addEventListener('click', e => {
+            if (!menu.hidden && !e.target.closest('.condividi')) apriMenu(false);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && !menu.hidden) {
+                apriMenu(false);
+                pulsante.focus();
+            }
+        });
+        for (const a of menu.querySelectorAll('[data-rete]')) a.addEventListener('click', () => apriMenu(false));
+
+        menu.querySelector('[data-azione="nativo"]').addEventListener('click', async () => {
+            const { url, titolo, testo } = dati();
+            try {
+                await navigator.share({ title: titolo, text: testo, url });
+                apriMenu(false);
+            } catch (e) { /* condivisione annullata dall'utente */ }
+        });
+        menu.querySelector('[data-azione="copia"]').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(dati().url);
+                stato.textContent = 'Link copiato.';
+            } catch (e) {
+                stato.textContent = 'Copia non riuscita: copia l\'indirizzo dalla barra del browser.';
+            }
+        });
+    })();
+</script>

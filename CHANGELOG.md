@@ -9,6 +9,10 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- Pulsante **Condividi** sulle pagine pubbliche (home e fatture), come in
+  coperni: condivisione nativa del telefono, link diretti a WhatsApp,
+  Telegram, email, Facebook, X, LinkedIn, Bluesky (nessuno script dei
+  social) e copia del link. Condivide il canonical della pagina.
 - Variabile `SITE_URL`: se valorizzata, canonical, `sitemap.xml` e
   `robots.txt` puntano sempre al dominio pubblico, anche quando il servizio
   risponde da altri host (es. l'URL `*.run.app` di Cloud Run).
