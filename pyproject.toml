@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.14,<4.0"
 dependencies = [
-    "Django>=6.0.9,<6.1",
+    "Django>=6.0.10,<6.1",
     # Il parser del tracciato FatturaPA è una libreria a sé, senza dipendenze:
     # https://github.com/azuki-beans/fatturapa
     "fatturapa>=0.2,<1.0",
