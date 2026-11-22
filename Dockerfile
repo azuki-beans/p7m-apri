@@ -1,7 +1,7 @@
 # --- Stage 1: dipendenze Python in un virtualenv isolato ---------------------
 # Poetry serve solo qui: nell'immagine finale si copia il venv già pronto, così
 # Poetry e le sue dipendenze (~50 MB) non arrivano in produzione.
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -26,7 +26,7 @@ RUN poetry install --only main --no-root --no-ansi \
         -path "*/locale/*" ! -path "*/locale/*/*" ! -name it ! -name en -prune -exec rm -rf {} +
 
 # --- Stage 2: runtime ---------------------------------------------------------
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 # openssl: estrazione dei .p7m. Pango + HarfBuzz (+font) servono a WeasyPrint
 # per rendere in PDF le fatture elettroniche (elenco minimo della doc ufficiale:
