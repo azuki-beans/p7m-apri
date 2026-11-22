@@ -9,6 +9,8 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- Footer con i link agli altri progetti azuki-beans (Coperni, Attese) e
+  all'hub [azukibeans.dev](https://azukibeans.dev/it/).
 - Pulsante **Condividi** sulle pagine pubbliche (home e fatture), come in
   coperni: condivisione nativa del telefono, link diretti a WhatsApp,
   Telegram, email, Facebook, X, LinkedIn, Bluesky (nessuno script dei
