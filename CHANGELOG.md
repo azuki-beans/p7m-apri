@@ -7,6 +7,12 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Sicurezza
+
+- Immagine Docker: `apt-get upgrade` nello stage finale, per avere le correzioni
+  Debian prima che `python:3.14-slim` venga ricostruita (zlib1g CVE-2026-85091,
+  che bloccava il rilascio su Trivy).
+
 ### Aggiunto
 
 - Footer con i link agli altri progetti azuki-beans (Coperni, Attese) e

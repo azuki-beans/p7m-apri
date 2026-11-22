@@ -31,7 +31,11 @@ FROM python:3.14-slim
 # openssl: estrazione dei .p7m. Pango + HarfBuzz (+font) servono a WeasyPrint
 # per rendere in PDF le fatture elettroniche (elenco minimo della doc ufficiale:
 # niente Cairo, WeasyPrint non lo usa più).
+# apt-get upgrade: le correzioni di sicurezza Debian arrivano prima che
+# l'immagine python:*-slim venga ricostruita (es. zlib1g CVE-2026-85091), e
+# Trivy blocca il rilascio sulle HIGH già correggibili.
 RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         openssl \
         libpango-1.0-0 \
