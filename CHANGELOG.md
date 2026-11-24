@@ -15,6 +15,8 @@ progetto adotta il [versionamento semantico](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- Dati strutturati (JSON-LD): `WebSite` sulla home ed editore (`publisher`)
+  collegato all'organizzazione dell'hub azukibeans.dev.
 - Footer con i link agli altri progetti azuki-beans (Coperni, Attese) e
   all'hub [azukibeans.dev](https://azukibeans.dev/it/).
 - Pulsante **Condividi** sulle pagine pubbliche (home e fatture), come in

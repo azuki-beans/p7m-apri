@@ -172,10 +172,17 @@ curl --data-binary @fattura.xml.p7m \
         tramite l'API qui sopra.</p>
     </article>
 
+    {# publisher: stesso @id dell'organizzazione nel JSON-LD dell'hub azukibeans.dev #}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://azukibeans.dev/#org",
+        "name": "azuki-beans",
+        "url": "https://azukibeans.dev/"
+      },
       "mainEntity": [
         {
           "@type": "Question",

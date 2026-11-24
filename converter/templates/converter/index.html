@@ -213,6 +213,22 @@
         anche eseguirlo sul tuo server con Docker.</p>
     </article>
 
+    {# publisher: stesso @id dell'organizzazione nel JSON-LD dell'hub azukibeans.dev #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "p7m-apri",
+      "url": "{{ canonical }}",
+      "inLanguage": "it",
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://azukibeans.dev/#org",
+        "name": "azuki-beans",
+        "url": "https://azukibeans.dev/"
+      }
+    }
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
