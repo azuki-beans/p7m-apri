@@ -11,7 +11,7 @@ dependencies = [
     # Il parser del tracciato FatturaPA è una libreria a sé, senza dipendenze:
     # https://github.com/azuki-beans/fatturapa
     "fatturapa>=0.2,<1.0",
-    "gunicorn>=26.2",
+    "gunicorn>=27.0.1",
     "pyhanko[etsi,async-http]>=0.38",
     "weasyprint>=70",
 ]
